@@ -1,0 +1,97 @@
+---
+/**
+ * 60 秒读懂世界 – 纯前端刷新版
+ * 浏览器每次刷新都会实时拉取最新数据
+ */
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+---
+
+<MainGridLayout title="60 秒读懂世界">
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <!-- 头部 -->
+    <header class="mb-8 text-center">
+      <h1 class="text-3xl font-extrabold text-slate-800 dark:text-slate-100">
+        60 秒读懂世界
+      </h1>
+      <p id="subTitle" class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+        加载中…
+      </p>
+    </header>
+
+    <!-- 封面骨架屏 -->
+    <!-- <section
+      id="coverWrap"
+      class="mb-8 rounded-2xl overflow-hidden shadow-lg animate-pulse bg-slate-200 dark:bg-slate-700 h-60"
+    ></section> -->
+
+    <!-- 新闻列表骨架屏 -->
+    <section
+      id="newsWrap"
+      class="bg-white dark:bg-slate-800 rounded-2xl shadow-md p-6 mb-8"
+    >
+      <ul class="space-y-3">
+        {Array(10)
+          .fill(0)
+          .map(() => (
+            <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50">
+              <span class="shrink-0 w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-600" />
+              <span class="h-5 flex-1 rounded bg-slate-200 dark:bg-slate-600" />
+            </li>
+          ))}
+      </ul>
+    </section>
+
+    <!-- 每日一句骨架屏 -->
+    <blockquote
+      id="tipWrap"
+      class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-2xl p-6 text-center italic text-slate-600 dark:text-slate-300"
+    >
+      加载中…
+    </blockquote>
+  </main>
+
+  <!-- 客户端脚本 -->
+  <script>
+    // 请求 & 渲染
+    async function load60s() {
+    //   const coverWrap = document.getElementById("coverWrap")!;
+      const newsWrap = document.getElementById("newsWrap")!;
+      const tipWrap = document.getElementById("tipWrap")!;
+      const subTitle = document.getElementById("subTitle")!;
+
+      try {
+        const res = await fetch("https://60s.kemeow.top/v2/60s?encoding=json");
+        if (!res.ok) throw new Error("网络错误");
+        const json: any = await res.json();
+        const { news, tip, date, day_of_week, lunar_date } = json.data;
+        // const { cover, news, tip, date, day_of_week, lunar_date } = json.data;
+
+        // 封面
+        // coverWrap.classList.remove("animate-pulse");
+        // coverWrap.innerHTML = `<img src="${cover}" class="w-full h-auto object-cover" alt="今日封面">`;
+
+        // 副标题
+                subTitle.textContent = `${date} · ${day_of_week} · ${lunar_date}`;
+        subTitle.className = 'mt-2 text-sm text-slate-500 dark:text-slate-100';
+
+        // 新闻列表
+        newsWrap.innerHTML = `<ul class="space-y-3">${news
+          .map(
+            (n: string, i: number) => `<li class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+              <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 text-xs font-bold flex items-center justify-center">${i + 1}</span>
+              <span class="text-slate-700 dark:text-slate-200 leading-relaxed">${n}</span>
+            </li>`
+          )
+          .join("")}</ul>`;
+
+        // 每日一句
+        tipWrap.textContent = `“${tip}”`;
+      } catch (e) {
+        // coverWrap.innerHTML = "";
+        newsWrap.innerHTML = `<p class="text-center text-rose-600 dark:text-rose-400">加载失败，请刷新重试</p>`;
+        tipWrap.textContent = "";
+      }
+    }
+    load60s();
+  </script>
+</MainGridLayout>

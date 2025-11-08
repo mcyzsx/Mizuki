@@ -1,0 +1,13 @@
+---
+// 这个组件只负责在浏览器端加载 Iconify
+// 这里不写任何浏览器 API，astro 不会把这段代码发到服务器
+---
+
+<script>
+  import { loadIconify } from '@/utils/icon-loader'; // 你的 ts 文件
+
+  // 只在浏览器执行
+  loadIconify()
+    .then(() => console.info('Iconify loaded'))
+    .catch((e) => console.error('Iconify failed', e));
+</script>

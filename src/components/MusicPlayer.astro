@@ -1,0 +1,25 @@
+---
+import MetingClient from './MetingClient.svelte';
+
+export interface Props {
+  url: string;
+  autoplay?: boolean;
+  theme?: string;
+}
+const { url, autoplay = false, theme = 'var(--primary)' } = Astro.props;
+
+const neteaseReg = /163\.com.*?[\/#]+(song|album|playlist)\?.*id=(\d+)/i;
+const match = url.match(neteaseReg);
+if (!match) throw new Error(`[APlayer] 不支持的网易链接：${url}`);
+const [_, type, id] = match;
+---
+
+<!-- 只在浏览器端渲染 -->
+<MetingClient
+  server="netease"
+  type={type}
+  id={id}
+  theme={theme}
+  autoplay={autoplay}
+  client:load
+/>

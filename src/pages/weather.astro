@@ -1,0 +1,185 @@
+---
+/**
+ * Weather page – 南京市
+ * 深色文字白色 + Emoji 天气图标
+ * https://60s.kemeow.top/v2/weather?query=南京市
+ */
+import MainGridLayout from '../layouts/MainGridLayout.astro';
+
+type Resp = {
+  code: number;
+  message: string;
+  data: {
+    location: {
+      name: string;
+      province: string;
+      city: string;
+      county: string;
+    };
+    weather: {
+      condition: string;
+      condition_code: string;
+      temperature: number;
+      humidity: number;
+      pressure: number;
+      precipitation: number;
+      wind_direction: string;
+      wind_power: string;
+      weather_icon: string;
+      weather_colors: string[];
+      updated: string;
+    };
+    air_quality: {
+      aqi: number;
+      level: number;
+      quality: string;
+      pm25: number;
+      pm10: number;
+      co: number;
+      no2: number;
+      o3: number;
+      so2: number;
+      rank: number;
+      total_cities: number;
+      updated: string;
+    };
+    sunrise: {
+      sunrise: string;
+      sunrise_desc: string;
+      sunset: string;
+      sunset_desc: string;
+    };
+    life_indices: Array<{
+      key: string;
+      name: string;
+      level: string;
+      description: string;
+    }>;
+    alerts: any[];
+  };
+};
+
+/* ---------- 拉取数据 ---------- */
+const endpoint = 'https://60s.kemeow.top/v2/weather?query=南京市';
+const res = await fetch(endpoint);
+if (!res.ok) throw new Error(`weather fetch error: ${res.status}`);
+const json = (await res.json()) as Resp;
+const { location, weather, air_quality, sunrise, life_indices, alerts } = json.data;
+
+/* Emoji 映射表 */
+const conditionEmoji: Record<string, string> = {
+  '01': '☀️',
+  '02': '⛅',
+  '03': '☁️',
+  '04': '🌧️',
+  '05': '⛈️',
+  '06': '🌨️',
+  '07': '🌫️',
+  '08': '🌪️',
+};
+const emoji = conditionEmoji[weather.condition_code] ?? '🌈';
+---
+
+<MainGridLayout title="天气 · 南京市">
+  <!-- 顶部卡片 -->
+  <section
+    class="card mb-6 flex flex-col gap-4 md:flex-row md:items-center text-black dark:text-white"
+    style={`--bg-start:${weather.weather_colors[0]};--bg-mid:${weather.weather_colors[1]};--bg-end:${weather.weather_colors[2]}`}
+  >
+    <div class="text-7xl drop-shadow-lg">{emoji}</div>
+    <div class="flex-1">
+      <h1 class="text-2xl font-bold">
+        {location.name} · {weather.condition}
+      </h1>
+      <p class="text-5xl font-black">{weather.temperature}°</p>
+      <p class="text-sm opacity-80">
+        湿度 {weather.humidity}% · 气压 {weather.pressure}hPa · 降水 {weather.precipitation}mm
+      </p>
+      <p class="text-sm opacity-80">
+        {weather.wind_direction} {weather.wind_power} · 更新于 {weather.updated}
+      </p>
+    </div>
+  </section>
+
+  <!-- 空气质量 -->
+  <section class="card mb-6 text-black dark:text-white">
+    <h2 class="mb-3 text-xl font-semibold">空气质量</h2>
+    <div class="grid gap-3 md:grid-cols-3">
+      <div class="flex items-center justify-between">
+        <span class="opacity-80">AQI</span>
+        <span class="text-2xl font-bold">{air_quality.aqi}</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="opacity-80">等级</span>
+        <span class="text-2xl font-bold text-green-500">{air_quality.quality}</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="opacity-80">PM2.5</span>
+        <span class="text-2xl font-bold">{air_quality.pm25}</span>
+      </div>
+      <div class="flex items-center justify-between"><span class="opacity-80">PM10</span><span>{air_quality.pm10}</span></div>
+      <div class="flex items-center justify-between"><span class="opacity-80">CO</span><span>{air_quality.co}</span></div>
+      <div class="flex items-center justify-between"><span class="opacity-80">NO₂</span><span>{air_quality.no2}</span></div>
+      <div class="flex items-center justify-between"><span class="opacity-80">O₃</span><span>{air_quality.o3}</span></div>
+      <div class="flex items-center justify-between"><span class="opacity-80">SO₂</span><span>{air_quality.so2}</span></div>
+      <div class="col-span-full flex items-center justify-between text-sm opacity-70">
+        全国排名 {air_quality.rank}/{air_quality.total_cities} 城市 · 更新于 {air_quality.updated}
+      </div>
+    </div>
+  </section>
+
+  <!-- 日出日落 -->
+  <section class="card mb-6 text-black dark:text-white">
+    <h2 class="mb-3 text-xl font-semibold">日出日落</h2>
+    <div class="grid gap-3 md:grid-cols-2">
+      <div class="flex items-center justify-between">
+        <span class="opacity-80">日出</span>
+        <span class="text-2xl font-bold">{sunrise.sunrise_desc}</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="opacity-80">日落</span>
+        <span class="text-2xl font-bold">{sunrise.sunset_desc}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 生活指数 -->
+  <section class="card mb-6 text-black dark:text-white">
+    <h2 class="mb-3 text-xl font-semibold">生活指数</h2>
+    <ul class="grid gap-3 md:grid-cols-2">
+      {life_indices.map((item) => (
+        <li class="flex items-start justify-between">
+          <div>
+            <p class="font-semibold">{item.name}</p>
+            <p class="text-sm opacity-70">{item.description}</p>
+          </div>
+          <span class="ml-4 shrink-0 rounded bg-sky-600/20 px-2 py-0.5 text-sm dark:bg-sky-400/20">
+            {item.level}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <!-- 预警 -->
+  {alerts && alerts.length > 0 && (
+    <section class="card border-red-400 dark:border-red-600 text-black dark:text-white">
+      <h2 class="mb-3 text-xl font-semibold text-red-500">气象预警</h2>
+      <pre class="whitespace-pre-wrap text-sm">{JSON.stringify(alerts, null, 2)}</pre>
+    </section>
+  )}
+
+  <!-- 页脚提示 -->
+  <p class="mt-6 text-center text-xs opacity-60 dark:text-white">
+    数据来自 <a class="underline" href="https://github.com/vikiboss/60s" target="_blank">60s 开源接口</a>
+    · 更新于 {weather.updated}
+  </p>
+</MainGridLayout>
+
+<style>
+  /* 渐变色卡片 */
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800;
+    background-image: linear-gradient(135deg, var(--bg-start, transparent) 0%, var(--bg-mid, transparent) 50%, var(--bg-end, transparent) 100%);
+  }
+</style>

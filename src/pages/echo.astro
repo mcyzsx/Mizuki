@@ -1,0 +1,226 @@
+---
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import GitHubRepoCard from "@/components/GitHubRepoCard.astro";
+import MusicPlayer from "@/components/MusicPlayer.astro";
+import BiliVideo from '@/components/BiliVideo.astro';
+
+interface EchoImage {
+	id: number;
+	image_url: string;
+	image_source: string;
+	message_id: number;
+}
+
+interface EchoItem {
+	id: number;
+	content: string;
+	username: string;
+	private: boolean;
+	user_id: number;
+	fav_count: number;
+	created_at: string;
+	images?: EchoImage[];
+	extension?: string;
+	extension_type?: string;
+	tags?: { name: string }[];
+}
+
+interface EchoResp {
+	code: number;
+	msg: string;
+	data: { total: number; items: EchoItem[] };
+}
+
+/* ---------- 1. 拉取数据 ---------- */
+const resp = await fetch("https://ech0.050815.xyz/api/echo/page");
+const json = (await resp.json()) as EchoResp;
+const items: EchoItem[] = json.data?.items ?? [];
+
+/* ---------- 具体时间格式化 ---------- */
+function formatTime(dateString: string): string {
+  const dt = new Date(dateString);
+
+  // 若浏览器时区不对，可手动加 8 小时（按需要开关）
+  // dt.setHours(dt.getHours() + 8);
+
+  const Y = dt.getFullYear();
+  const M = String(dt.getMonth() + 1).padStart(2, '0');
+  const D = String(dt.getDate()).padStart(2, '0');
+  const h = String(dt.getHours()).padStart(2, '0');
+  const m = String(dt.getMinutes()).padStart(2, '0');
+
+  return `${Y}-${M}-${D} ${h}:${m}`;
+}
+
+/* ---------- 3. 构造 moment 数据结构（直接复用 diary 模板字段） ---------- */
+const moments = items.map((it) => ({
+	id: it.id,
+	content: it.content || "",
+	date: it.created_at,
+	images: it.images?.map((img) => img.image_url) ?? [],
+	tags: it.tags?.map((t) => t.name) ?? [],
+	extension: it.extension,
+	extension_type: it.extension_type,
+}));
+---
+
+<MainGridLayout title="瞬间" description="生活点滴碎碎念">
+  <div
+    class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
+  >
+    <div class="card-base z-10 px-4 py-4 md:px-6 md:py-5 relative w-full">
+      <div class="relative max-w-4xl">
+        <!-- 页头 -->
+        <div class="moments-header mb-6">
+          <div class="header-content">
+            <div class="header-info">
+              <h1
+                class="moments-title text-xl md:text-2xl lg:text-3xl font-bold text-90 mb-1"
+              >
+                瞬间
+              </h1>
+              <p class="moments-subtitle text-sm md:text-base lg:text-lg text-75">
+                记录生活点滴，一些想法
+              </p>
+            </div>
+            <div class="header-stats">
+              <div class="stat-item text-center">
+                <span
+                  class="stat-number text-lg md:text-xl lg:text-2xl font-bold text-[var(--primary)]"
+                >
+                  {moments.length}
+                </span>
+                <span class="stat-label text-xs md:text-sm lg:text-base text-75">
+                  {i18n(I18nKey.diaryCount)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 说说列表 -->
+        <div class="moments-timeline">
+          <div class="timeline-list space-y-4">
+            {moments.map((m) => (
+              <div class="moment-item card-base p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all">
+                <div class="moment-content">
+                  <p
+                    class="moment-text text-sm md:text-base lg:text-lg text-90 leading-relaxed mb-3 md:mb-4"
+                    set:html={m.content.replace(/\n/g, "<br />")}
+                  />
+
+                  {/* 图片 */}
+                  {m.images.length > 0 && (
+                    <div class="moment-images grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4">
+                      {m.images.map((src) => (
+                        <div class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform">
+                          <img
+                            src={src}
+                            alt=""
+                            class="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 音乐 */}
+                  { m.extension_type === "MUSIC" && m.extension && <MusicPlayer url={m.extension} /> }
+
+
+                  {/* B 站视频 */}
+                  {m.extension_type === "VIDEO" && m.extension && (
+                    <BiliVideo url={m.extension} />
+                    )}
+
+                  {/* GitHub 卡片 */}
+                  {m.extension_type === "GITHUBPROJ" && m.extension && (
+                    <div class="mb-3 md:mb-4">
+                      <GitHubRepoCard
+                        repo={m.extension
+                          .replace("https://github.com/", "")
+                          .replace(/\/$/, "")}
+                        url={m.extension}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <hr class="moment-divider border-t border-[var(--line-divider)] my-3 md:my-4" />
+
+                <div class="moment-footer flex justify-between items-center">
+                  <div
+                    class="moment-time flex items-center gap-1.5 text-75 text-xs md:text-sm lg:text-base"
+                  >
+                    <i class="time-icon text-xs md:text-sm">🕐</i>
+                    <time datetime={m.date}>
+                      {formatTime(m.date)}
+                    </time>
+                  </div>
+
+                  {m.tags.length > 0 && (
+                    <div class="text-xs text-[var(--primary)]">
+                      🏷️ {m.tags.join(", ")}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- 底部提示 -->
+        <div class="moments-tips text-center mt-6 md:mt-8 lg:mt-10 text-75 text-xs md:text-sm lg:text-base italic">
+          仅显示最近 {items.length} 条记录
+        </div>
+      </div>
+    </div>
+  </div>
+</MainGridLayout>
+
+<!-- 引入 MetingJS（音乐） -->
+<script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script>
+
+<!-- 引入 GitHub 卡片组件（上一问已给出） -->
+<script>
+  import "@/components/GitHubRepoCard.astro";
+</script>
+
+<style>
+  /* 与 diary 页完全一致的样式，直接复用 */
+  .card-base {
+    background: var(--card-bg);
+    border: 1px solid var(--line-divider);
+    transition: all 0.3s ease;
+  }
+  .moments-header {
+    padding: 1rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark, var(--primary)) 100%);
+    color: white;
+  }
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .moment-images .image-item img {
+    transition: transform 0.3s;
+  }
+  .moment-images .image-item:hover img {
+    transform: scale(1.05);
+  }
+  @media (max-width: 640px) {
+    .header-content {
+      flex-direction: column;
+      text-align: center;
+      gap: 0.75rem;
+    }
+    .moment-images {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

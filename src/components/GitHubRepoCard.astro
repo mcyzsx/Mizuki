@@ -1,0 +1,206 @@
+---
+export interface Props {
+  repo: string;          // owner/repo
+  url: string;           // 跳转地址（可以是任意链接）
+}
+
+const { repo, url } = Astro.props;
+const cacheKey = `gh:repo:${repo}`;
+---
+
+<div
+  class="gh-card gradient-card"
+  data-repo={repo}
+  data-url={url}
+  data-cache-key={cacheKey}
+>
+  <a href={url} target="_blank" rel="noopener noreferrer" class="gh-link">
+    <div class="gh-info">
+      <svg
+        class="gh-icon"
+        width="18"
+        height="18"
+        viewBox="0 0 16 16"
+        fill="currentColor"
+      >
+        <path
+          d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+             0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+        />
+      </svg>
+
+      <span class="gh-title">{repo}</span>
+
+      <span class="gh-stars" aria-label="stars">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path
+            d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173
+               6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927
+               0l2.184 4.327 4.898.696c.441.062.612.636.283.95l-3.523 3.356.83
+               4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"
+          />
+        </svg>
+        <span class="gh-stars-count">—</span>
+      </span>
+    </div>
+  </a>
+
+  <p class="gh-desc" style="display:none;"></p>
+</div>
+
+<script>
+  interface GHData {
+    name: string;
+    desc: string;
+    stars: number;
+  }
+
+  document.querySelectorAll<HTMLElement>('.gh-card').forEach(el => {
+    const repo   = el.dataset.repo!;
+    const url    = el.dataset.url!;
+    const key    = el.dataset.cacheKey!;
+    const title  = el.querySelector('.gh-title')!;
+    const desc   = el.querySelector('.gh-desc') as HTMLElement;
+    const stars  = el.querySelector('.gh-stars-count')!;
+
+    let loaded = false;
+
+    const io = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && !loaded) {
+          loaded = true;
+          io.disconnect();
+          fetchRepo();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    io.observe(el);
+
+    async function fetchRepo() {
+      try {
+        const cached = sessionStorage.getItem(key);
+        if (cached) {
+          render(JSON.parse(cached) as GHData);
+          return;
+        }
+      } catch {}
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${repo}`, {
+          headers: { Accept: 'application/vnd.github+json' },
+        });
+        if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+        const data = await res.json();
+
+        const payload: GHData = {
+          name: data.full_name || data.name || repo,
+          desc: data.description || '',
+          stars: Number(data.stargazers_count || 0),
+        };
+        try {
+          sessionStorage.setItem(key, JSON.stringify(payload));
+        } catch {}
+        render(payload);
+      } catch (e) {
+        // 静默降级：保持默认文案
+      }
+    }
+
+    function render(d: GHData) {
+      title.textContent  = d.name;
+      stars.textContent  = d.stars.toLocaleString();
+      if (d.desc) {
+        desc.textContent = d.desc;
+        desc.style.display = 'block';
+      }
+    }
+  });
+</script>
+
+<style>
+/* ===== 浅色默认值 ===== */
+.gh-card {
+  --gh-bg: var(--card-bg, #ffffff);
+  --gh-border: var(--line-divider, #e5e7eb);
+  --gh-text: var(--c-text-1, #111827);
+  --gh-text-2: var(--c-text-2, #6b7280);
+  --gh-icon: var(--c-text-3, #9ca3af);
+  --gh-accent: #f59e0b;
+
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--gh-bg);
+  box-shadow: 0 0 0 1px var(--gh-border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.gh-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px var(--gh-border), 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== 暗色适配 ===== */
+@media (prefers-color-scheme: dark) {
+  .gh-card {
+    --gh-bg: var(--card-bg, #1f1f1f);
+    --gh-border: var(--line-divider, #333);
+    --gh-text: var(--c-text-1, #f9fafb);
+    --gh-text-2: var(--c-text-2, #d1d5db);
+    --gh-icon: var(--c-text-3, #9ca3af);
+  }
+  .gh-card:hover {
+    box-shadow: 0 0 0 1px var(--gh-border), 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* 如果博客用 html.dark 手动切换，也兼容 */
+html.dark .gh-card {
+  --gh-bg: var(--card-bg, #1f1f1f);
+  --gh-border: var(--line-divider, #333);
+  --gh-text: var(--c-text-1, #f9fafb);
+  --gh-text-2: var(--c-text-2, #d1d5db);
+  --gh-icon: var(--c-text-3, #9ca3af);
+}
+html.dark .gh-card:hover {
+  box-shadow: 0 0 0 1px var(--gh-border), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* 内部布局不变，仅把颜色换成变量 */
+.gh-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.gh-info {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
+}
+.gh-icon {
+  font-size: 18px;
+  opacity: 0.8;
+  color: var(--gh-icon);
+}
+.gh-title {
+  font-weight: 600;
+  font-family: var(--font-monospace, ui-monospace, monospace);
+  word-break: break-all;
+  color: var(--gh-text);
+}
+.gh-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--gh-accent);
+}
+.gh-desc {
+  padding: 0 10px 10px;
+  color: var(--gh-text-2);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+</style>

@@ -1,0 +1,50 @@
+---
+export interface Props {
+  /** 完整 BV 链接 或纯 bvid，例如 BV1x4411H7oC */
+  url: string;
+  /** 是否自动播放（默认 false） */
+  autoplay?: boolean;
+  /** 是否用封面图懒加载（默认 true） */
+  lazy?: boolean;
+}
+
+const { url, autoplay = false, lazy = true } = Astro.props;
+
+/* 解析 bvid */
+const bvid = url
+  .trim()
+  .replace(/.*(BV[0-9A-Za-z]+).*/, '$1'); // 提取 BV 号
+
+const iframeSrc = `https://player.bilibili.com/player.html?bvid=${bvid}&autoplay=${
+  autoplay ? 1 : 0
+}&high_quality=1&danmaku=0`;
+---
+
+<div class="bili-video mb-3 md:mb-4">
+  {lazy ? (
+    <iframe
+      src={iframeSrc}
+      scrolling="no"
+      frameborder="no"
+      allowfullscreen="true"
+      loading="lazy"
+      class="w-full aspect-video rounded-md"
+    />
+  ) : (
+    <iframe
+      src={iframeSrc}
+      scrolling="no"
+      frameborder="no"
+      allowfullscreen="true"
+      class="w-full aspect-video rounded-md"
+    />
+  )}
+</div>
+
+<style>
+  /* 深色模式反色，保持跟博客同步 */
+  html.dark .bili-video iframe {
+    filter: invert(0.95) hue-rotate(180deg) contrast(1.1);
+    background: #000;
+  }
+</style>
