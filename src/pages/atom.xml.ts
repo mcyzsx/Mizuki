@@ -1,9 +1,9 @@
 import { getImage } from "astro:assets";
 import { getCollection } from "astro:content";
 import type { APIContext, ImageMetadata } from "astro";
-import * as MarkdownIt from "markdown-it";
+import MarkdownIt from "markdown-it";
 import { parse as htmlParser } from "node-html-parser";
-import * as sanitizeHtml from "sanitize-html";
+import sanitizeHtml from "sanitize-html";
 import { siteConfig, profileConfig } from "@/config";
 import { getSortedPosts } from "@/utils/content-utils";
 
