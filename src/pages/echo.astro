@@ -74,30 +74,26 @@ const moments = items.map((it) => ({
       <div class="relative max-w-4xl">
         <!-- 页头 -->
         <div class="moments-header mb-6">
-          <div class="header-content">
+        <div class="header-content">
             <div class="header-info">
-              <h1
-                class="moments-title text-xl md:text-2xl lg:text-3xl font-bold text-90 mb-1"
-              >
+            <h1 class="moments-title text-xl md:text-2xl lg:text-3xl font-bold mb-1 text-white">
                 瞬间
-              </h1>
-              <p class="moments-subtitle text-sm md:text-base lg:text-lg text-75">
+            </h1>
+            <p class="moments-subtitle text-sm md:text-base lg:text-lg text-white/90">
                 记录生活点滴，一些想法
-              </p>
+            </p>
             </div>
             <div class="header-stats">
-              <div class="stat-item text-center">
-                <span
-                  class="stat-number text-lg md:text-xl lg:text-2xl font-bold text-[var(--primary)]"
-                >
-                  {moments.length}
+            <div class="stat-item text-center">
+                <span class="stat-number text-lg md:text-xl lg:text-2xl font-bold text-white">
+                {moments.length}
                 </span>
-                <span class="stat-label text-xs md:text-sm lg:text-base text-75">
-                  {i18n(I18nKey.diaryCount)}
+                <span class="stat-label text-xs md:text-sm lg:text-base text-white/80">
+                {i18n(I18nKey.diaryCount)}
                 </span>
-              </div>
             </div>
-          </div>
+            </div>
+        </div>
         </div>
 
         <!-- 说说列表 -->
@@ -196,12 +192,19 @@ const moments = items.map((it) => ({
     border: 1px solid var(--line-divider);
     transition: all 0.3s ease;
   }
-  .moments-header {
-    padding: 1rem;
-    border-radius: 8px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark, var(--primary)) 100%);
-    color: white;
-  }
+/* 强制深色外观，不管当前主题 */
+.moments-header {
+  padding: 1rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%); /* 橙→深橙 */
+  color: #fff;
+}
+.moments-header .text-white {
+  color: #ffffff !important;
+}
+.moments-header .text-gray-300 {
+  color: #d1d5db !important;
+}
   .header-content {
     display: flex;
     justify-content: space-between;
