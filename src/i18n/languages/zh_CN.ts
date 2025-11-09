@@ -147,6 +147,7 @@ export const zh_CN: Translation = {
 	[Key.timeline]: "时间线",
 	[Key.timelineSubtitle]: "我的成长历程和重要里程碑",
 	[Key.timelineEducation]: "教育经历",
+    [Key.timelineDaily]: "日常记录",
 	[Key.timelineWork]: "工作经历",
 	[Key.timelineProject]: "项目经历",
 	[Key.timelineAchievement]: "成就荣誉",

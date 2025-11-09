@@ -1,36 +1,47 @@
 ---
 import { Icon } from "astro-icon/components";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
-import { getSortedPosts } from "../utils/content-utils"; // 获取配置信息（假设在app.config中）
+import { getSortedPosts } from "../utils/content-utils";
 
 const author = {
-	name: "钟神秀",
-	avatar:
-		"https://img-zsx.oss-cn-shanghai.aliyuncs.com/cb04a9a64f09bd4ba85d9908439653ed.jpg",
-	email: "mcyzsx815@qq.com",
+  name: "钟神秀",
+  avatar: "https://img-zsx.oss-cn-shanghai.aliyuncs.com/cb04a9a64f09bd4ba85d9908439653ed.jpg",
+  email: "mcyzsx815@qq.com",
 };
 
-// 获取博客文章数量
 const allBlogPosts = await getSortedPosts();
 const totalPosts = allBlogPosts.length;
 
-// 计算博客运行天数（假设从2024-01-01开始）
 const startDate = new Date("2025-11-01");
 const today = new Date();
 const runningDays = Math.floor(
-	(today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+  (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
 );
+
+// ===== 构建时拉取 Umami =====
+const umamiUrl = "https://umami-mizuki.zsx815.top/";
+let today_uv = 0;
+let today_pv = 0;
+try {
+  const res = await fetch(umamiUrl);
+  const data = await res.json();
+  today_uv = data.today_uv ?? 0;
+  today_pv = data.today_pv ?? 0;
+} catch (e) {
+  console.warn("构建时 Umami 数据获取失败:", e);
+}
+function formatNumber(n: number) {
+  return n >= 10000 ? (n / 10000).toFixed(1) + "万" : n.toString();
+}
 ---
 
 <MainGridLayout>
   <div class="about-page">
-    <!-- 移动端导航 -->
     <div class="mobile-only">
       <a href="/" class="back-link">← 返回首页</a>
     </div>
 
     <div class="about-content">
-      <!-- 页面标题 -->
       <header class="about-header">
         <div class="left-content">
           <h1>关于我</h1>
@@ -43,7 +54,6 @@ const runningDays = Math.floor(
         </div>
       </header>
 
-      <!-- 卡片网格布局 -->
       <div class="cards-grid">
         <!-- 个人介绍卡片 -->
         <div class="card intro-card">
@@ -104,11 +114,9 @@ const runningDays = Math.floor(
         <!-- 特长卡片 -->
         <div class="card specialty-card">
           <span class="label">特长</span>
+          <p class="specialty-text">活到老，学到老~</p>
           <p class="specialty-text">
-            Linux、社区管理专家
-          </p>
-          <p class="specialty-text">
-            学习能力 <span class="highlight">MAX</span>
+            摆烂能力 <span class="highlight">MAX</span>
           </p>
           <Icon name="ph:magic-wand-bold" class="card-bg-icon" />
         </div>
@@ -120,19 +128,19 @@ const runningDays = Math.floor(
             <a class="contact-link" href={`mailto:${author.email}`} title="邮箱">
               <Icon name="ph:envelope-simple-bold" />
             </a>
-            <a class="contact-link" href="https://weixin.qq.com" title="微信">
-              <Icon name="ph:wechat-logo-bold" />
+            <a class="contact-link" href="https://qm.qq.com/q/QKiovnkOkO" title="微信">
+              <Icon name="ri:qq-line" />
             </a>
-            <a class="contact-link" href="https://bilibili.com" title="哔哩哔哩">
+            <a class="contact-link" href="https://space.bilibili.com/396923563" title="哔哩哔哩">
               <Icon name="ri:bilibili-fill" />
             </a>
-            <a class="contact-link" href="https://t.me" title="Telegram">
+            <a class="contact-link" href="https://t.me/zhzsx_me" title="Telegram">
               <Icon name="ph:telegram-logo-bold" />
             </a>
-            <a class="contact-link" href="https://discord.com" title="Discord">
+            <!-- <a class="contact-link" href="https://discord.com" title="Discord">
               <Icon name="ph:discord-logo-bold" />
-            </a>
-            <a class="contact-link" href="https://x.com" title="X">
+            </a> -->
+            <a class="contact-link" href="https://x.com/kemiao" title="X">
               <Icon name="ph:x-logo-bold" />
             </a>
           </div>
@@ -153,11 +161,11 @@ const runningDays = Math.floor(
                 <span class="stat-label">运行天数</span>
               </div>
               <div class="stat-item">
-                <span class="stat-value" id="uv">加载中...</span>
+                <span class="stat-value">{formatNumber(today_uv)}</span>
                 <span class="stat-label">今日访客</span>
               </div>
               <div class="stat-item">
-                <span class="stat-value" id="pv">加载中...</span>
+                <span class="stat-value">{formatNumber(today_pv)}</span>
                 <span class="stat-label">今日浏览</span>
               </div>
             </div>
@@ -170,492 +178,395 @@ const runningDays = Math.floor(
 </MainGridLayout>
 
 <style>
-/* 全局样式 */
-.about-page {
-  padding: 2rem 1rem;
-  min-height: calc(100vh - var(--header-height));
-  animation: float-in .3s backwards;
-}
-
-.about-content {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-/* 移动端导航 */
-.mobile-only {
-  display: none;
-  margin-bottom: 1rem;
-}
-
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  color: var(--c-primary);
-  text-decoration: none;
-  font-size: 1rem;
-}
-
-.back-link:hover {
-  text-decoration: underline;
-}
-
-/* 页面标题 */
-.about-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 3rem;
-  padding: 1rem 0;
-  text-align: left;
-}
-
-.left-content h1 {
-  margin-bottom: .5rem;
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: var(--c-text-1);
-}
-
-.left-content p {
-  margin: 0;
-  font-size: 1.2rem;
-  color: var(--c-text-2);
-}
-
-.right-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar-frame {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  width: 120px;
-  height: 120px;
-  border: 3px solid var(--c-border);
-  border-radius: 50%;
-  background-color: var(--c-bg-soft);
-  transition: all .3s ease;
-}
-
-.avatar-image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* 卡片网格布局 */
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
-
-/* 通用卡片样式 */
-.card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  min-height: 220px;
-  padding: 2rem 1.5rem;
-  border: 1px solid var(--c-border);
-  border-radius: 1.5rem;
-  background-color: var(--ld-bg-card);
-  text-align: center;
-  transition: all .3s ease;
-  box-shadow: none;
-}
-
-.card:hover {
-  box-shadow: none;
-  transform: none;
-}
-
-.card .label {
-  position: absolute;
-  opacity: .8;
-  top: 1rem;
-  left: 1.5rem;
-  margin: 0;
-  font-size: .8rem;
-  color: var(--c-text-2);
-}
-
-.card-bg-icon {
-  position: absolute;
-  opacity: .1;
-  right: 1rem;
-  bottom: 1rem;
-  font-size: 5rem;
-  color: var(--c-text-1);
-  pointer-events: none;
-}
-
-/* 卡片类型样式 */
-.intro-card {
-  grid-column: 1 / -1;
-  color: var(--c-text-1);
-}
-
-.intro-card h2 {
-  margin: .5rem 0;
-  font-size: 3rem;
-  font-weight: bold;
-}
-
-.info-card {
-  align-items: stretch;
-  justify-content: center;
-  padding: 2.5rem 1.5rem;
-  color: var(--c-text-1);
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  align-items: flex-start;
-  justify-content: center;
-  position: relative;
-  width: 100%;
-}
-
-.info-item .label {
-  flex-shrink: 0;
-  position: static;
-  width: 100%;
-  margin-bottom: .5rem;
-  text-align: left;
-}
-
-.value {
-  display: block;
-  width: 100%;
-  font-size: 2.5rem;
-  font-weight: bold;
-  text-align: center;
-}
-
-.value-small {
-  display: block;
-  width: 100%;
-  font-size: 2rem;
-  font-weight: bold;
-  text-align: center;
-}
-
-.card-link {
-  position: absolute;
-  right: 1.5rem;
-  bottom: 1rem;
-  font-size: .8rem;
-  color: var(--c-text-2);
-}
-
-.card-link:hover {
-  color: var(--c-primary);
-}
-
-.age-card {
-  padding: .4rem 1.5rem .5rem;
-}
-
-.motto-card {
-  color: var(--c-text-1);
-}
-
-.motto-card p {
-  margin: 0;
-  font-size: 2.5rem;
-  font-weight: bold;
-  line-height: 1.2;
-}
-
-.tech-card {
-  color: var(--c-text-1);
-}
-
-.tech-card h3 {
-  margin: .5rem 0;
-  font-size: 3rem;
-  font-weight: bold;
-}
-
-.tech-card p {
-  color: var(--c-text-2);
-}
-
-.music-card {
-  color: var(--c-text-1);
-}
-
-.music-card h3 {
-  font-size: 2.5rem;
-  font-weight: bold;
-}
-
-.music-card p {
-  color: var(--c-text-2);
-}
-
-.specialty-card {
-  font-size: 1.8rem;
-  font-weight: bold;
-  text-align: center;
-  color: var(--c-text-1);
-}
-
-.specialty-text {
-  margin: .2em 0;
-}
-
-.highlight {
-  display: inline-block;
-  font-size: 2.5rem;
-  line-height: 1;
-  color: var(--c-primary);
-}
-
-.contact-card {
-  grid-column: 1 / -1;
-  color: var(--c-text-1);
-}
-
-.contact-links {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.contact-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
-  height: 50px;
-  background-color: var(--c-bg-1);
-  border: 1px solid var(--c-border);
-  border-radius: 50%;
-  color: var(--c-text-1);
-  font-size: 1.4rem;
-  transition: all .2s ease;
-  padding: 0;
-  box-shadow: none;
-  text-decoration: none;
-}
-
-.contact-link:hover {
-  background-color: var(--c-bg-soft);
-  color: var(--c-text);
-}
-
-.stats-card {
-  grid-column: 1 / -1;
-  color: var(--c-text-1);
-}
-
-.stats-content {
-  width: 100%;
-}
-
-.stats-range-section {
-  margin-bottom: 0;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
-  margin-bottom: 0;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: .5rem;
-  background-color: var(--c-bg-1);
-  border-radius: .8rem;
-  transition: transform .2s ease;
-}
-
-.stat-value {
-  margin-bottom: .25rem;
-  font-size: 2rem;
-  font-weight: bold;
-  color: var(--c-text-1);
-}
-
-.stat-label {
-  opacity: .9;
-  font-size: .9rem;
-  color: var(--c-text-2);
-}
-
-/* 动画效果 */
-@keyframes float-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 响应式布局 */
-@media (max-width: 768px) {
-  .mobile-only {
-    display: block;
-  }
-  
+  /* 全局样式 */
   .about-page {
-    padding: 1rem;
+    padding: 2rem 1rem;
+    min-height: calc(100vh - var(--header-height));
+    animation: float-in 0.3s backwards;
   }
-  
+  .about-content {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .mobile-only {
+    display: none;
+    margin-bottom: 1rem;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--c-primary);
+    text-decoration: none;
+    font-size: 1rem;
+  }
+  .back-link:hover {
+    text-decoration: underline;
+  }
   .about-header {
-    flex-direction: column;
-    text-align: center;
-    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    padding: 1rem 0;
+    text-align: left;
   }
-  
-  .about-header .left-content {
-    margin-bottom: 1.5rem;
+  .left-content h1 {
+    margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--c-text-1);
   }
-  
-  .avatar-frame {
-    width: 100px;
-    height: 100px;
-  }
-  
-  .card {
-    padding: 1.5rem 1rem;
-  }
-  
-  .cards-grid {
-    gap: 1rem;
-  }
-
-  .age-card {
-    padding: .4rem 1.5rem .5rem;
-  }
-
-  .contact-card .contact-link {
-    width: 45px;
-    height: 45px;
+  .left-content p {
+    margin: 0;
     font-size: 1.2rem;
+    color: var(--c-text-2);
   }
-
+  .right-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .avatar-frame {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    width: 120px;
+    height: 120px;
+    border: 3px solid var(--c-border);
+    border-radius: 50%;
+    background-color: var(--c-bg-soft);
+    transition: all 0.3s ease;
+  }
+  .avatar-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    min-height: 220px;
+    padding: 2rem 1.5rem;
+    border: 1px solid var(--c-border);
+    border-radius: 1.5rem;
+    background-color: var(--ld-bg-card);
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: none;
+  }
+  .card:hover {
+    box-shadow: none;
+    transform: none;
+  }
+  .card .label {
+    position: absolute;
+    opacity: 0.8;
+    top: 1rem;
+    left: 1.5rem;
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--c-text-2);
+  }
+  .card-bg-icon {
+    position: absolute;
+    opacity: 0.1;
+    right: 1rem;
+    bottom: 1rem;
+    font-size: 5rem;
+    color: var(--c-text-1);
+    pointer-events: none;
+  }
+  .intro-card {
+    grid-column: 1 / -1;
+    color: var(--c-text-1);
+  }
+  .intro-card h2 {
+    margin: 0.5rem 0;
+    font-size: 3rem;
+    font-weight: bold;
+  }
+  .info-card {
+    align-items: stretch;
+    justify-content: center;
+    padding: 2.5rem 1.5rem;
+    color: var(--c-text-1);
+  }
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: flex-start;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+  }
+  .info-item .label {
+    flex-shrink: 0;
+    position: static;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    text-align: left;
+  }
+  .value {
+    display: block;
+    width: 100%;
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-align: center;
+  }
+  .value-small {
+    display: block;
+    width: 100%;
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+  }
+  .card-link {
+    position: absolute;
+    right: 1.5rem;
+    bottom: 1rem;
+    font-size: 0.8rem;
+    color: var(--c-text-2);
+  }
+  .card-link:hover {
+    color: var(--c-primary);
+  }
+  .age-card {
+    padding: 0.4rem 1.5rem 0.5rem;
+  }
+  .motto-card {
+    color: var(--c-text-1);
+  }
+  .motto-card p {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: bold;
+    line-height: 1.2;
+  }
+  .tech-card {
+    color: var(--c-text-1);
+  }
+  .tech-card h3 {
+    margin: 0.5rem 0;
+    font-size: 3rem;
+    font-weight: bold;
+  }
+  .tech-card p {
+    color: var(--c-text-2);
+  }
+  .music-card {
+    color: var(--c-text-1);
+  }
+  .music-card h3 {
+    font-size: 2.5rem;
+    font-weight: bold;
+  }
+  .music-card p {
+    color: var(--c-text-2);
+  }
+  .specialty-card {
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-align: center;
+    color: var(--c-text-1);
+  }
+  .specialty-text {
+    margin: 0.2em 0;
+  }
+  .highlight {
+    display: inline-block;
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--c-primary);
+  }
+  .contact-card {
+    grid-column: 1 / -1;
+    color: var(--c-text-1);
+  }
+  .contact-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .contact-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background-color: var(--c-bg-1);
+    border: 1px solid var(--c-border);
+    border-radius: 50%;
+    color: var(--c-text-1);
+    font-size: 1.4rem;
+    transition: all 0.2s ease;
+    padding: 0;
+    box-shadow: none;
+    text-decoration: none;
+  }
+  .contact-link:hover {
+    background-color: var(--c-bg-soft);
+    color: var(--c-text);
+  }
   .stats-card {
-    padding: 3rem 1rem 1.5rem;
+    grid-column: 1 / -1;
+    color: var(--c-text-1);
   }
-
+  .stats-content {
+    width: 100%;
+  }
+  .stats-range-section {
+    margin-bottom: 0;
+  }
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 0;
   }
-}
-
-/* 深色模式支持 */
-:root {
-  --c-text-1: #1a1a1a;
-  --c-text-2: #666666;
-  --c-border: #e5e5e5;
-  --c-bg-soft: #f5f5f5;
-  --c-bg-1: #ffffff;
-  --c-bg-2: #fafafa;
-  --c-primary: #007acc;
-  --ld-bg-card: #ffffff;
-}
-
-html.dark {
-  --c-text-1: #e5e5e5;
-  --c-text-2: #999999;
-  --c-border: #333333;
-  --c-bg-soft: #1a1a1a;
-  --c-bg-1: #0d0d0d;
-  --c-bg-2: #1a1a1a;
-  --c-primary: #66b3ff;
-  --ld-bg-card: #1a1a1a;
-}
-
-html.dark .card {
-  border-color: var(--c-border);
-  background-color: var(--c-bg-2);
-}
-
-html.dark .label,
-html.dark .card-bg-icon,
-html.dark .tech-card p,
-html.dark .stat-label {
-  color: var(--c-text-2);
-}
-
-html.dark .info-card .card-link {
-  color: var(--c-text-2);
-}
-
-html.dark .info-card .card-link:hover {
-  color: var(--c-primary);
-}
-
-html.dark .specialty-card .highlight {
-  color: var(--c-primary);
-}
-
-html.dark .contact-card .contact-link {
-  background-color: var(--c-bg-1);
-  border-color: var(--c-border);
-  color: var(--c-text-1);
-}
-
-html.dark .contact-card .contact-link:hover {
-  background-color: var(--c-bg-soft);
-  color: var(--c-text);
-  border-color: var(--c-border);
-}
-
-html.dark .stat-item {
-  background-color: var(--c-bg-1);
-}
-
-html.dark .avatar-frame {
-  border-color: var(--c-border);
-  background-color: var(--c-bg-soft);
-}
-
-/* 深色模式下提亮所有 Icon */
-html.dark .card svg,
-html.dark .card .card-bg-icon {
-  filter: brightness(1.5) contrast(1.2);
-}
-</style>
-
-<script client:load>
-  async function loadUmami() {
-    try {
-      const res = await fetch('https://umami-mizuki.zsx815.top/');
-      const data = await res.json();
-      document.getElementById('uv').textContent = formatNumber(data.today_uv || 0);
-      document.getElementById('pv').textContent = formatNumber(data.today_pv || 0);
-    } catch (e) {
-      console.warn('Umami 数据获取失败:', e);
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    background-color: var(--c-bg-1);
+    border-radius: 0.8rem;
+    transition: transform 0.2s ease;
+  }
+  .stat-value {
+    margin-bottom: 0.25rem;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--c-text-1);
+  }
+  .stat-label {
+    opacity: 0.9;
+    font-size: 0.9rem;
+    color: var(--c-text-2);
+  }
+  @keyframes float-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
-  function formatNumber(n) {
-    return n >= 10000 ? (n / 10000).toFixed(1) + '万' : n.toString();
+  @media (max-width: 768px) {
+    .mobile-only {
+      display: block;
+    }
+    .about-page {
+      padding: 1rem;
+    }
+    .about-header {
+      flex-direction: column;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .about-header .left-content {
+      margin-bottom: 1.5rem;
+    }
+    .avatar-frame {
+      width: 100px;
+      height: 100px;
+    }
+    .card {
+      padding: 1.5rem 1rem;
+    }
+    .cards-grid {
+      gap: 1rem;
+    }
+    .age-card {
+      padding: 0.4rem 1.5rem 0.5rem;
+    }
+    .contact-card .contact-link {
+      width: 45px;
+      height: 45px;
+      font-size: 1.2rem;
+    }
+    .stats-card {
+      padding: 3rem 1rem 1.5rem;
+    }
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
-  loadUmami();
-</script>
+  :root {
+    --c-text-1: #1a1a1a;
+    --c-text-2: #666666;
+    --c-border: #e5e5e5;
+    --c-bg-soft: #f5f5f5;
+    --c-bg-1: #ffffff;
+    --c-bg-2: #fafafa;
+    --c-primary: #007acc;
+    --ld-bg-card: #ffffff;
+  }
+  html.dark {
+    --c-text-1: #e5e5e5;
+    --c-text-2: #999999;
+    --c-border: #333333;
+    --c-bg-soft: #1a1a1a;
+    --c-bg-1: #0d0d0d;
+    --c-bg-2: #1a1a1a;
+    --c-primary: #66b3ff;
+    --ld-bg-card: #1a1a1a;
+  }
+  html.dark .card {
+    border-color: var(--c-border);
+    background-color: var(--c-bg-2);
+  }
+  html.dark .label,
+  html.dark .card-bg-icon,
+  html.dark .tech-card p,
+  html.dark .stat-label {
+    color: var(--c-text-2);
+  }
+  html.dark .info-card .card-link {
+    color: var(--c-text-2);
+  }
+  html.dark .info-card .card-link:hover {
+    color: var(--c-primary);
+  }
+  html.dark .specialty-card .highlight {
+    color: var(--c-primary);
+  }
+  html.dark .contact-card .contact-link {
+    background-color: var(--c-bg-1);
+    border-color: var(--c-border);
+    color: var(--c-text-1);
+  }
+  html.dark .contact-card .contact-link:hover {
+    background-color: var(--c-bg-soft);
+    color: var(--c-text);
+    border-color: var(--c-border);
+  }
+  html.dark .stat-item {
+    background-color: var(--c-bg-1);
+  }
+  html.dark .avatar-frame {
+    border-color: var(--c-border);
+    background-color: var(--c-bg-soft);
+  }
+  html.dark .card svg,
+  html.dark .card .card-bg-icon {
+    filter: brightness(1.5) contrast(1.2);
+  }
+</style>

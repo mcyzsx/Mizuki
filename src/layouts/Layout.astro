@@ -46,9 +46,6 @@ let { title, banner, description, lang, setOGTypeArticle, postSlug } =
 // so use Swup hooks instead to change the height immediately when a link is clicked
 const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
 
-// 只在生产环境加载，避免本地开发污染数据
-const isProd = import.meta.env.PROD;
-
 // defines global css variables
 // why doing this in Layout instead of GlobalStyles: https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
 const configHue = siteConfig.themeColor.hue;
@@ -237,14 +234,11 @@ const umamiScripts = umamiConfig.scripts || ""; // 获取Umami scripts配置
 		<script src="/js/timeline-scroll-handler.js" defer></script>
 		<script src="/js/skills-progress-handler.js" defer></script>
 
-          {isProd && (
     <script
       defer
       src="https://umami.050815.xyz/script.js"
       data-website-id="2a600168-9edc-438f-9ca4-c3e543890d5f"
-      data-astro-rerun
-    />
-  )}
+    ></script>
     <link rel="stylesheet" href="/src/assets/styles/fc.css" />
   <script type="module" src="/src/plugins/friendCircle.ts"></script>
 </head>

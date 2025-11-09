@@ -8,7 +8,7 @@ export interface Props {
 		id: string;
 		title: string;
 		description: string;
-		type: "education" | "work" | "project" | "achievement";
+		type: "education" | "work" | "project" | "achievement" | "daily";
 		startDate: string;
 		endDate?: string;
 		location?: string;
@@ -48,6 +48,8 @@ const getTypeIcon = (type: string) => {
 			return "material-symbols:code";
 		case "achievement":
 			return "material-symbols:emoji-events";
+        case "daily":
+            return "uil:life-ring";  
 		default:
 			return "material-symbols:event";
 	}
@@ -64,6 +66,8 @@ const getTypeColor = (type: string) => {
 			return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";
 		case "achievement":
 			return "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400";
+        case "daily":
+            return "bg-red-100 text-red-700 dark:bg-orange-900/30 dark:text-red-400";
 		default:
 			return "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400";
 	}
@@ -80,6 +84,8 @@ const getTypeText = (type: string) => {
 			return i18n(I18nKey.timelineProject);
 		case "achievement":
 			return i18n(I18nKey.timelineAchievement);
+        case "daily":
+            return i18n(I18nKey.timelineDaily);    
 		default:
 			return type;
 	}
