@@ -622,13 +622,13 @@ If you're referring to a local resource on the same server, you can use relative
 
 Code:
 
-    See my [About](/about/) page for details.
+    See my [About](/me/) page for details.
 
 Preview:
 
 ---
 
-See my [About](/about/) page for details.
+See my [About](/me/) page for details.
 
 ---
 

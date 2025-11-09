@@ -1,10 +1,10 @@
 ---
-import MainGridLayout from "@/layouts/MainGridLayout.astro";
-import I18nKey from "@/i18n/i18nKey";
-import { i18n } from "@/i18n/translation";
+import BiliVideo from "@/components/BiliVideo.astro";
 import GitHubRepoCard from "@/components/GitHubRepoCard.astro";
 import MusicPlayer from "@/components/MusicPlayer.astro";
-import BiliVideo from '@/components/BiliVideo.astro';
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
 
 interface EchoImage {
 	id: number;
@@ -40,18 +40,18 @@ const items: EchoItem[] = json.data?.items ?? [];
 
 /* ---------- 具体时间格式化 ---------- */
 function formatTime(dateString: string): string {
-  const dt = new Date(dateString);
+	const dt = new Date(dateString);
 
-  // 若浏览器时区不对，可手动加 8 小时（按需要开关）
-  // dt.setHours(dt.getHours() + 8);
+	// 若浏览器时区不对，可手动加 8 小时（按需要开关）
+	// dt.setHours(dt.getHours() + 8);
 
-  const Y = dt.getFullYear();
-  const M = String(dt.getMonth() + 1).padStart(2, '0');
-  const D = String(dt.getDate()).padStart(2, '0');
-  const h = String(dt.getHours()).padStart(2, '0');
-  const m = String(dt.getMinutes()).padStart(2, '0');
+	const Y = dt.getFullYear();
+	const M = String(dt.getMonth() + 1).padStart(2, "0");
+	const D = String(dt.getDate()).padStart(2, "0");
+	const h = String(dt.getHours()).padStart(2, "0");
+	const m = String(dt.getMinutes()).padStart(2, "0");
 
-  return `${Y}-${M}-${D} ${h}:${m}`;
+	return `${Y}-${M}-${D} ${h}:${m}`;
 }
 
 /* ---------- 3. 构造 moment 数据结构（直接复用 diary 模板字段） ---------- */

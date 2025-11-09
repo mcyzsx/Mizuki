@@ -1,4 +1,5 @@
 ---
+/* ==========  friends.astro  ========== */
 import { siteConfig } from "../config";
 import { getEntry, render } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
@@ -6,15 +7,13 @@ import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 
-/* ---------------  若友链页被禁用 --------------- */
 if (!siteConfig.featurePages.friends) return Astro.redirect("/404/");
 
-/* ---------------  读取 markdown 说明 --------------- */
 const friendsPost = await getEntry("spec", "friends");
 if (!friendsPost) throw new Error("friends page content not found");
 const { Content } = await render(friendsPost);
 
-/* ---------------  拉取远端友链数据 --------------- */
+/* 拉取友链数据 */
 type FriendItem = {
   title:string; url:string; icon:string; snapshot:string;
   description:string; feed:string;
@@ -30,7 +29,7 @@ const friends = shuffle(remote.content);
 ---
 <MainGridLayout title={i18n(I18nKey.friends)} description={i18n(I18nKey.friends)}>
   <div class="friends-container">
-    <!-- ======  友链卡片  ====== -->
+    <!-- 友链卡片 -->
     <div class="friends-grid">
       {friends.map(f=>(
         <div class="glass-card">
@@ -46,7 +45,6 @@ const friends = shuffle(remote.content);
               </div>
             </div>
           </div>
-
           <div class="timeline">
             {f.posts.slice(0,3).map(p=>(
               <a class="timeline-item" href={p.link} target="_blank" rel="noopener noreferrer">
@@ -55,18 +53,15 @@ const friends = shuffle(remote.content);
               </a>
             ))}
           </div>
-
           <div class="actions">
             <a href={f.url} target="_blank" rel="noopener noreferrer" class="btn primary" aria-label="访问">
               <svg viewBox="0 0 24 24"><path fill="currentColor" d="M8.59 16.59L13.17 12L8.59 7.41L10 6l6 6l-6 6l-1.41-1.41z"/></svg>
             </a>
-            <!-- RSS 红色 -->
             <a href={f.feed} target="_blank" rel="noopener noreferrer" class="btn" aria-label="RSS">
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
                 <path fill="#ef4444" d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27zm0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93z"/>
               </svg>
             </a>
-            <!-- 快照 黄色 -->
             <a href={f.snapshot} target="_blank" rel="noopener noreferrer" class="btn" aria-label="快照">
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
                 <g fill="none" stroke="#f59e0b" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
@@ -81,53 +76,50 @@ const friends = shuffle(remote.content);
       ))}
     </div>
 
-    <!-- ======  友链朋友圈（fc-lite）  ====== -->
-    <section class="fc-section">
-      <h2 id="small-circle">友链朋友圈</h2>
-      <div id="friend-circle-lite-root" class="not-prose">加载中...</div>
-    </section>
+    <!-- 友链朋友圈 -->
+<section class="fc-section">
+  <h2 id="small-circle">友链朋友圈</h2>
+  <div id="friend-circle-lite-root" class="not-prose">加载中...</div>
+  <script type="module">
+    import { FriendCircle } from '/src/plugins/friendCircle.ts';
+    const root = document.getElementById('friend-circle-lite-root');
+    if (root) {
+      const lite = new FriendCircle();
+      lite.init({
+        private_api_url: 'https://fc.kemeow.top/',
+        page_turning_number: 10,
+        error_img: 'https://cravatar.cn/avatar/57d8260dfb55501c37dde588e7c3852c'
+      });
+      lite.load();
+    }
+  </script>
+</section>
 
-    <!-- ======  页面说明  ====== -->
+
+    <!-- 页面说明 -->
     <div class="prose-wrapper">
       <Markdown class="prose"><Content /></Markdown>
     </div>
   </div>
 </MainGridLayout>
 
-<!-- ==========  样式  ========== -->
 <style is:global>
+  /* ======  样式与之前完全一致  ====== */
   :root{
-    --radius:16px;
-    --blur:12px;
-    --glass:rgba(255,255,255,.55);
-    --glass-border:rgba(255,255,255,.3);
-    --glow:0 0 12px rgba(0,0,0,.05);
-    --text:#222;
-    --text-secondary:#555;
-    --primary:#0066ff;
-    --primary-light:#5e9bff;
+    --radius:16px;--blur:12px;--glass:rgba(255,255,255,.55);
+    --glass-border:rgba(255,255,255,.3);--glow:0 0 12px rgba(0,0,0,.05);
+    --text:#222;--text-secondary:#555;--primary:#0066ff;--primary-light:#5e9bff;
   }
   html.dark{
-    --glass:rgba(30,30,30,.55);
-    --glass-border:rgba(255,255,255,.08);
-    --glow:0 0 16px rgba(0,0,0,.25);
-    --text:#eee;
-    --text-secondary:#aaa;
+    --glass:rgba(30,30,30,.55);--glass-border:rgba(255,255,255,.08);
+    --glow:0 0 16px rgba(0,0,0,.25);--text:#eee;--text-secondary:#aaa;
   }
   .friends-container{max-width:900px;margin:auto;padding:2rem 1rem;}
   .friends-grid{display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));}
   .glass-card{
-    background:var(--glass);
-    backdrop-filter:blur(var(--blur));
-    -webkit-backdrop-filter:blur(var(--blur));
-    border:1px solid var(--glass-border);
-    border-radius:var(--radius);
-    box-shadow:var(--glow),0 4px 20px rgba(0,0,0,.05);
-    padding:1.25rem 1.5rem;
-    display:flex;
-    flex-direction:column;
-    gap:.75rem;
-    transition:transform .25s,box-shadow .25s;
+    background:var(--glass);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));
+    border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--glow),0 4px 20px rgba(0,0,0,.05);
+    padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:.75rem;transition:transform .25s,box-shadow .25s;
   }
   .glass-card:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,.1),var(--glow);}
   .card-header{display:flex;gap:1rem;align-items:center;}
@@ -152,12 +144,9 @@ const friends = shuffle(remote.content);
   .primary{background:var(--primary);border-color:var(--primary);}
   .primary svg{fill:#fff;}
   .prose-wrapper{margin-top:3rem;}
-
-  /* ---- 朋友圈区域（fc-lite） ---- */
   .fc-section{margin-top:3rem;}
   #small-circle{font-size:1.25rem;font-weight:600;color:var(--text);margin-bottom:1rem;}
-  #friend-circle-lite-root{color:var(--text);}/* 默认继承浅色文字 */
-  /* 深色模式强制白色 */
+  #friend-circle-lite-root{color:var(--text);}
   html.dark #friend-circle-lite-root,
   html.dark #friend-circle-lite-root .fc-item,
   html.dark #friend-circle-lite-root .fc-name,
@@ -169,15 +158,4 @@ const friends = shuffle(remote.content);
   html.dark #friend-circle-lite-root .fc-stats{color:#fff!important;}
 </style>
 
-<script>
-  import '@/assets/styles/fc.css'  
-  import { FriendCircle } from '@/plugins/friendCircle' 
-
-  const lite = new FriendCircle()
-  lite.init({
-    private_api_url: 'https://fc.kemeow.top/', // 你的 lite 后端
-    page_turning_number: 10,
-    error_img: 'https://cravatar.cn/avatar/57d8260dfb55501c37dde588e7c3852c'
-  })
-  lite.load()
-</script>
+<!-- 友链朋友圈：内联立即执行，第一次就能跑 -->

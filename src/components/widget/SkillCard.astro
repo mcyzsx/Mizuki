@@ -1,6 +1,6 @@
 ---
-import { i18n } from "../../i18n/translation";
 import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
 import Icon from "../misc/Icon.astro";
 
 export interface Props {
@@ -213,7 +213,7 @@ const skillColor = skill.color || "#3B82F6";
   }
 </style>
 
-<script>
+<script type="module" data-swup-ignore>
   // 监听图标加载完成事件
   document.addEventListener('DOMContentLoaded', () => {
     const skillCard = document.currentScript?.parentElement;
