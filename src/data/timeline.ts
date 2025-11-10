@@ -33,12 +33,38 @@ export const timelineData: TimelineItem[] = [
 		location: "Nanjing",
 		organization: "Nanjing Vocational University of Industry Technology",
 		skills: ["二本", "自动化技术与应用"],
-		achievements: [
-			"英语四六级",
-            "计算机二级",
-		],
+		achievements: ["英语四六级", "计算机二级"],
 		icon: "material-symbols:school",
 		color: "#059669",
+		featured: true,
+	},
+	{
+		id: "mizuki-blog",
+		title: "Mizuki博客自用",
+		description:
+			"基于Mizuki博客的自用修改版本。",
+		type: "work",
+		startDate: "2025-10-31",
+		// endDate: "2024-04-30",
+		location: "Nanjing",
+		// organization: "在",
+		// position: "前端实习生",
+		skills: ["Astro", "CSS", "TypeScript", "Svelte"],
+		achievements: ["魔改主题中。。。"],
+		links: [
+			{
+				name: "源码",
+				url: "https://github.com/matsuzaka-yuki/Mizuki",
+				type: "project",
+			},
+			{
+				name: "博客",
+				url: "https://blog.zsx815.top",
+				type: "website",
+			},
+		],
+		icon: "la:blog",
+		color: "#DC2626",
 		featured: true,
 	},
 	// {
@@ -188,22 +214,22 @@ export const timelineData: TimelineItem[] = [
 	// 	icon: "material-symbols:school",
 	// 	color: "#2563EB",
 	// },
-	{
-		id: "first-programming-experience",
-		title: "First Programming Experience",
-		description:
-			"First encountered programming in high school IT class, started learning Python basic syntax.",
-		type: "education",
-		startDate: "2021-03-01",
-		skills: ["Python", "Basic Programming Concepts"],
-		achievements: [
-			'Completed first "Hello World" program',
-			"Learned basic loops and conditional statements",
-			"Developed interest in programming",
-		],
-		icon: "material-symbols:code",
-		color: "#7C3AED",
-	},
+	// {
+	// 	id: "first-programming-experience",
+	// 	title: "First Programming Experience",
+	// 	description:
+	// 		"First encountered programming in high school IT class, started learning Python basic syntax.",
+	// 	type: "education",
+	// 	startDate: "2021-03-01",
+	// 	skills: ["Python", "Basic Programming Concepts"],
+	// 	achievements: [
+	// 		'Completed first "Hello World" program',
+	// 		"Learned basic loops and conditional statements",
+	// 		"Developed interest in programming",
+	// 	],
+	// 	icon: "material-symbols:code",
+	// 	color: "#7C3AED",
+	// },
 ];
 
 // Get timeline statistics
