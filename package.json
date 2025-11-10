@@ -14,7 +14,7 @@
 		"format": "biome format --write ./src",
 		"lint": "biome check --write ./src",
 		"preinstall": "npx only-allow pnpm",
-        "build:fc": "esbuild src/plugins/friendCircle.ts --bundle --format=iife --global-name=FriendCircle --outfile=public/js/friendCircle.iife.js"
+		"build:fc": "esbuild src/plugins/friendCircle.ts --bundle --format=iife --global-name=FriendCircle --outfile=public/js/friendCircle.iife.js"
 	},
 	"dependencies": {
 		"@astrojs/check": "^0.9.5",
@@ -47,6 +47,7 @@
 		"crypto-js": "^4.2.0",
 		"dayjs": "^1.11.19",
 		"hastscript": "^9.0.1",
+		"htmlparser2": "^10.0.0",
 		"katex": "^0.16.25",
 		"markdown-it": "^14.1.0",
 		"marked": "^16.4.1",
