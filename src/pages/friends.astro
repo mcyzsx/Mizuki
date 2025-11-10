@@ -6,6 +6,10 @@ import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import FriendCircleLite from "@/components/FriendCircleLite.astro";
+import ClientOnly from "astro/client-only";
+
+
 
 if (!siteConfig.featurePages.friends) return Astro.redirect("/404/");
 
@@ -79,20 +83,9 @@ const friends = shuffle(remote.content);
     <!-- 友链朋友圈 -->
 <section class="fc-section">
   <h2 id="small-circle">友链朋友圈</h2>
-  <div id="friend-circle-lite-root" class="not-prose">加载中...</div>
-  <script type="module">
-    import { FriendCircle } from '../plugins/friendCircle.ts';
-    const root = document.getElementById('friend-circle-lite-root');
-    if (root) {
-      const lite = new FriendCircle();
-      lite.init({
-        private_api_url: 'https://fc.kemeow.top/',
-        page_turning_number: 10,
-        error_img: 'https://cravatar.cn/avatar/57d8260dfb55501c37dde588e7c3852c'
-      });
-      lite.load();
-    }
-  </script>
+  <ClientOnly client:load>
+    <FriendCircleLite />
+  </ClientOnly>
 </section>
 
 
