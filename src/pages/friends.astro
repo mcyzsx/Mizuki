@@ -81,7 +81,7 @@ const friends = shuffle(remote.content);
   <h2 id="small-circle">友链朋友圈</h2>
   <div id="friend-circle-lite-root" class="not-prose">加载中...</div>
   <script type="module">
-    import { FriendCircle } from '/ts/friendCircle.ts';
+    import { FriendCircle } from '../plugins/friendCircle.ts';
     const root = document.getElementById('friend-circle-lite-root');
     if (root) {
       const lite = new FriendCircle();
