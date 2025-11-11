@@ -3,6 +3,9 @@ import type { MarkdownHeading } from "astro";
 import type { WidgetComponentConfig } from "../../types/config";
 import { widgetManager } from "../../utils/widget-manager";
 import Announcement from "./Announcement.astro";
+import Yan from "./Yan.astro";
+import Hello from "./Hello.astro";
+import RecentComment from "./RecentComment.astro";
 import Categories from "./Categories.astro";
 import MusicPlayer from "./MusicPlayer.svelte";
 // 动态导入所有可能的组件
@@ -20,12 +23,13 @@ const { class: className, headings, customComponents = {} } = Astro.props;
 
 // 获取配置的组件列表
 const topComponents = widgetManager.getComponentsByPosition("top");
-const stickyComponents = widgetManager.getComponentsByPosition("sticky");
-
-// 扩展的组件映射表，支持自定义组件
+const stickyComponents = widgetManager.getComponentsByPosition("sticky");// 扩展的组件映射表，支持自定义组件
 const componentMap = {
 	profile: Profile,
 	announcement: Announcement,
+	Yan: Yan,
+	Hello: Hello,
+	RecentComment: RecentComment,
 	categories: Categories,
 	tags: Tags,
 	toc: TOC,

@@ -1,12 +1,13 @@
 ---
 /**
- * Weather page – 南京市
- * 深色文字白色 + Emoji 天气图标
- * https://60s.kemeow.top/v2/weather?query=南京市
+ * Weather page – 国内IP自动定位 / 国外IP fallback 南京市
  */
 import MainGridLayout from '../layouts/MainGridLayout.astro';
 
-type Resp = {
+/* ---------- 类型 ---------- */
+type IpResp = { code: number; message: string; data: { ip: string } };
+
+type WeatherResp = {
   code: number;
   message: string;
   data: {
@@ -59,14 +60,29 @@ type Resp = {
   };
 };
 
-/* ---------- 拉取数据 ---------- */
-const endpoint = 'https://60s.kemeow.top/v2/weather?query=南京市';
-const res = await fetch(endpoint);
-if (!res.ok) throw new Error(`weather fetch error: ${res.status}`);
-const json = (await res.json()) as Resp;
-const { location, weather, air_quality, sunrise, life_indices, alerts } = json.data;
+/* ---------- 1. 取 IP ---------- */
+const ipRes = await fetch('https://60s.kemeow.top/v2/ip');
+if (!ipRes.ok) throw new Error(`ip fetch error: ${ipRes.status}`);
+const ipJson = (await ipRes.json()) as IpResp;
+const visitorIP = ipJson.data.ip;
 
-/* Emoji 映射表 */
+/* ---------- 2. 用 IP 取天气 ---------- */
+let weatherJson: WeatherResp;
+let isFallback = false;
+try {
+  const wRes = await fetch(`https://60s.kemeow.top/v2/weather?query=${visitorIP}`);
+  weatherJson = (await wRes.json()) as WeatherResp;
+  if (weatherJson.code !== 200) throw new Error(weatherJson.message);
+} catch {
+  // 国外 IP 或任何异常 → fallback 南京
+  isFallback = true;
+  const njRes = await fetch('https://60s.kemeow.top/v2/weather?query=南京市');
+  weatherJson = (await njRes.json()) as WeatherResp;
+}
+
+const { location, weather, air_quality, sunrise, life_indices, alerts } = weatherJson.data;
+
+/* ---------- 3. Emoji 映射 ---------- */
 const conditionEmoji: Record<string, string> = {
   '01': '☀️',
   '02': '⛅',
@@ -80,7 +96,7 @@ const conditionEmoji: Record<string, string> = {
 const emoji = conditionEmoji[weather.condition_code] ?? '🌈';
 ---
 
-<MainGridLayout title="天气 · 南京市">
+<MainGridLayout title={`天气 · ${location.city}`}>
   <!-- 顶部卡片 -->
   <section
     class="card mb-6 flex flex-col gap-4 md:flex-row md:items-center text-black dark:text-white"
@@ -91,6 +107,9 @@ const emoji = conditionEmoji[weather.condition_code] ?? '🌈';
       <h1 class="text-2xl font-bold">
         {location.name} · {weather.condition}
       </h1>
+      {isFallback && (
+        <p class="text-sm text-red-500/90 dark:text-red-400/90">未收容您所在的城市，已展示南京天气</p>
+      )}
       <p class="text-5xl font-black">{weather.temperature}°</p>
       <p class="text-sm opacity-80">
         湿度 {weather.humidity}% · 气压 {weather.pressure}hPa · 降水 {weather.precipitation}mm
@@ -177,7 +196,6 @@ const emoji = conditionEmoji[weather.condition_code] ?? '🌈';
 </MainGridLayout>
 
 <style>
-  /* 渐变色卡片 */
   .card {
     @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800;
     background-image: linear-gradient(135deg, var(--bg-start, transparent) 0%, var(--bg-mid, transparent) 50%, var(--bg-end, transparent) 100%);

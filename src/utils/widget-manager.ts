@@ -11,6 +11,9 @@ import type {
 export const WIDGET_COMPONENT_MAP = {
 	profile: "../components/widget/Profile.astro",
 	announcement: "../components/widget/Announcement.astro",
+	Yan: "../components/widget/Yan.astro",
+	Hello: "../components/widget/Hello.astro",
+	RecentComment: "../components/widget/RecentComment.astro",
 	categories: "../components/widget/Categories.astro",
 	tags: "../components/widget/Tags.astro",
 	toc: "../components/widget/TOC.astro",

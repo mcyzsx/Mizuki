@@ -1,0 +1,112 @@
+---
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+import WidgetLayout from "./WidgetLayout.astro";
+import { widgetManager } from "../../utils/widget-manager";
+
+// 使用统一的组件管理器检查是否应该折叠
+const svgComponent = widgetManager.getConfig().components.find(c => c.type === "Hello");
+const isCollapsed = svgComponent ? widgetManager.isCollapsed(svgComponent, 1) : false;
+
+interface Props {
+	class?: string;
+	style?: string;
+}
+const className = Astro.props.class;
+const style = Astro.props.style;
+
+// SVG 图片 URL
+const svgUrl = "https://v.xapi.chat/api/ip-card/api.php?apikey=efdab9ee-7e6d-87e5-677a-bcb87ca53d2643e8805e&type=svg&width=300&height=350";
+---
+
+<WidgetLayout name={i18n(I18nKey.Hello)} id="svg" isCollapsed={isCollapsed} collapsedHeight="350px"
+                class={className} style={style}
+>
+    <div class="svg-container">
+        <img src={svgUrl} alt="Dynamic SVG" class="svg-image" />
+    </div>
+</WidgetLayout>
+
+<style>
+    .svg-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+    }
+    
+    .svg-image {
+        max-width: 100%;
+        height: auto;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    // 灯箱效果
+    document.addEventListener('DOMContentLoaded', function() {
+        const svgImage = document.querySelector('.svg-image');
+        if (svgImage) {
+            svgImage.addEventListener('click', function() {
+                // 创建灯箱背景
+                const lightbox = document.createElement('div');
+                lightbox.className = 'lightbox';
+                lightbox.innerHTML = `
+                    <div class="lightbox-content">
+                        <span class="close">&times;</span>
+                        <img src="${this.src}" alt="Dynamic SVG" />
+                    </div>
+                `;
+                
+                // 添加样式
+                const style = document.createElement('style');
+                style.textContent = `
+                    .lightbox {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background-color: rgba(0,0,0,0.8);
+                        z-index: 1000;
+                    }
+                    .lightbox-content {
+                        position: relative;
+                        max-width: 90%;
+                        max-height: 90%;
+                    }
+                    .lightbox-content img {
+                        width: 100%;
+                        height: auto;
+                    }
+                    .close {
+                        position: absolute;
+                        top: 10px;
+                        right: 20px;
+                        color: white;
+                        font-size: 35px;
+                        font-weight: bold;
+                        cursor: pointer;
+                    }
+                    .close:hover {
+                        color: #ccc;
+                    }
+                `;
+                
+                document.head.appendChild(style);
+                document.body.appendChild(lightbox);
+                
+                // 关闭灯箱
+                lightbox.addEventListener('click', function(e) {
+                    if (e.target === lightbox || (e.target as HTMLElement).className === 'close') {
+                        document.body.removeChild(lightbox);
+                        document.head.removeChild(style);
+                    }
+                });
+            });
+        }
+    });
+</script>

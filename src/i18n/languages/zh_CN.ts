@@ -18,6 +18,12 @@ export const zh_CN: Translation = {
 	[Key.announcement]: "公告",
 	[Key.announcementClose]: "关闭",
 
+    [Key.RecentComment]: "最新评论",
+
+    [Key.hitokoto]: "一言",
+
+    [Key.Hello]: "欢迎来到我的网站！",
+
 	[Key.comments]: "评论",
 	[Key.friends]: "友链",
 	[Key.untitled]: "无标题",

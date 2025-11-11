@@ -1,0 +1,196 @@
+---
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import WidgetLayout from "./WidgetLayout.astro";
+import { widgetManager } from "@/utils/widget-manager";
+import { commentConfig } from "@/config";
+import { sanitizeHtml } from "@/utils/sanitize";
+
+type TkComment = {
+  _id: string;
+  url: string;
+  nick: string;
+  comment: string;
+  created: number;
+  mailMd5?: string;
+  href?: string;
+};
+
+const COUNT = 5;
+const api = commentConfig?.twikoo?.envId?.trim();
+const COLLAPSED_HEIGHT = "9rem";
+
+/* ---------- 拉取函数：超时+重试 ---------- */
+async function fetchRecent(tries = 3, timeout = 15000): Promise<TkComment[]> {
+  if (!api) return [];
+  for (let i = 0; i < tries; i++) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), timeout);
+      const res = await fetch(`${api}/comment`, {
+        method : "POST",
+        headers: { "Content-Type": "application/json" },
+        body   : JSON.stringify({ event: "GET_RECENT_COMMENTS", accessToken: "" }),
+        signal : ctrl.signal,
+      });
+      clearTimeout(t);
+      if (!res.ok) throw new Error(String(res.status));
+      const data = (await res.json()).data || [];
+      return data.slice(0, COUNT).map((c: any) => ({ ...c, href: c.href || c.url }));
+    } catch (e) {
+      if (i === tries - 1) console.warn("[RecentComment] 拉取失败:", e);
+      else await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+  return [];
+}
+
+/* ---------- SSR 仅作首次填充 ---------- */
+let comments: TkComment[] = [];
+try {
+  comments = await fetchRecent();
+} catch {
+  // 静默降级，客户端会再试
+}
+
+const componentCfg = widgetManager
+  .getConfig()
+  .components.find((c) => c.type === "RecentComment");
+const isCollapsed = componentCfg
+  ? widgetManager.isCollapsed(componentCfg, comments.length)
+  : false;
+
+interface Props {
+  class?: string;
+  style?: string;
+}
+const className = Astro.props.class;
+const style = Astro.props.style;
+---
+
+<WidgetLayout
+  name={i18n(I18nKey.RecentComment)}
+  id="recentComment"
+  isCollapsed={isCollapsed}
+  collapsedHeight={COLLAPSED_HEIGHT}
+  class={className}
+  style={style}
+>
+  <div id="recentComment-body">
+    {comments.length === 0 ? (
+      <p class="text-sm text-gray-400 dark:text-gray-200">暂无评论</p>
+    ) : (
+      <ul class="space-y-3 text-sm">
+        {comments.map((c) => {
+          const isInternal = c.url.startsWith(Astro.site?.pathname || "");
+          return (
+            <li class="group flex items-start gap-2 rounded-md p-2 hover:bg-base-200 dark:hover:bg-base-700">
+              <img
+                class="mt-1 h-6 w-6 rounded-full object-cover"
+                src={`https://cravatar.cn/avatar/${c.mailMd5 || c._id}?s=80`}
+                alt={c.nick}
+                loading="lazy"
+              />
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium text-black dark:text-gray-200 hover:text-accent">
+                    {c.nick}
+                  </span>
+                  {!isInternal && (
+                    <svg
+                      class="h-3 w-3 text-base-400 dark:text-gray-300"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
+                      <path d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
+                    </svg>
+                  )}
+                  <a
+                    class="ml-auto text-xs text-base-400 dark:text-gray-200 hover:text-accent"
+                    href={`${c.url}/`}
+                    title={isInternal ? "前往文章" : "外站链接"}
+                  >
+                    {new Date(c.created).toLocaleDateString()}
+                  </a>
+                </div>
+                <div
+                  class="comment-html mt-1 line-clamp-2 text-sm text-base-700 dark:text-gray-200"
+                  set:html={sanitizeHtml(c.comment)}
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    )}
+  </div>
+
+  {api && (
+    <script define:vars={{ api, COUNT }}>
+      const key = "twikoo:recent";
+      const TTL = 5 * 60_000;          // 5 分钟缓存
+      async function refresh() {
+        const cached = localStorage.getItem(key);
+        const last = cached ? JSON.parse(cached) : { ts: 0, list: [] };
+        if (Date.now() - last.ts < TTL) return;
+        try {
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), 15000);
+          const res = await fetch(`${api}/comment`, {
+            method : "POST",
+            headers: { "Content-Type": "application/json" },
+            body   : JSON.stringify({ event: "GET_RECENT_COMMENTS", accessToken: "" }),
+            signal : ctrl.signal,
+          });
+          clearTimeout(t);
+          const list = ((await res.json()).data || []).slice(0, COUNT);
+          localStorage.setItem(key, JSON.stringify({ ts: Date.now(), list }));
+          render(list);
+        } catch (e) {
+          console.warn("[RecentComment] 增量更新失败:", e);
+        }
+      }
+      function render(list) {
+        const box = document.querySelector<HTMLElement>("#recentComment-body");
+        if (!box) return;
+        if (!list.length) {
+          box.innerHTML = `<p class="text-sm text-gray-400 dark:text-gray-200">暂无评论</p>`;
+          return;
+        }
+        box.innerHTML = "<ul class='space-y-3 text-sm'>" +
+          list.map((c) => {
+            const isInternal = c.url.startsWith(location.origin);
+            return `
+              <li class="group flex items-start gap-2 rounded-md p-2 hover:bg-base-200 dark:hover:bg-base-700">
+                <img class="mt-1 h-6 w-6 rounded-full object-cover" src="https://cravatar.cn/avatar/${
+                  c.mailMd5 || c._id
+                }?s=80" loading="lazy" />
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-medium text-black dark:text-gray-200 hover:text-accent">${c.nick}</span>
+                    ${
+                      isInternal
+                        ? ""
+                        : `<svg class="h-3 w-3 text-base-400 dark:text-gray-300" fill="currentColor" viewBox="0 0 16 16">
+                             <path d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
+                             <path d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
+                           </svg>`
+                    }
+                    <a class="ml-auto text-xs text-base-400 dark:text-gray-200 hover:text-accent" href="${c.url}#twikoo">${new Date(c.created).toLocaleDateString()}</a>
+                  </div>
+                  <div class="comment-html mt-1 line-clamp-2 text-sm text-base-700 dark:text-gray-200">${c.comment}</div>
+                </div>
+              </li>`;
+          }).join("") +
+          "</ul>";
+      }
+      window.addEventListener("DOMContentLoaded", () => {
+        const cached = localStorage.getItem(key);
+        if (cached) render(JSON.parse(cached).list);
+        setTimeout(refresh, 3000);
+      });
+      document.addEventListener("swup:content:replace", refresh);
+    </script>
+  )}
+</WidgetLayout>

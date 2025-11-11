@@ -1,5 +1,6 @@
 import type {
 	AnnouncementConfig,
+    // RecentCommentConfig,
 	CommentConfig,
 	ExpressiveCodeConfig,
 	FooterConfig,
@@ -319,7 +320,7 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 };
 
 export const commentConfig: CommentConfig = {
-	enable: false, // 启用评论功能。当设置为 false 时，评论组件将不会显示在文章区域。
+	enable: true, // 启用评论功能。当设置为 false 时，评论组件将不会显示在文章区域。
 	twikoo: {
 		envId: "https://twikoo.zsx815.top",
 		lang: "zh", // 设置 Twikoo 评论系统语言为英文
@@ -390,12 +391,59 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			animationDelay: 50,
 		},
 		{
+			// 组件类型：公告组件
+			type: "Hello",
+			// 是否启用该组件（现在通过统一配置控制）
+			enable: true,
+			// 组件显示顺序
+			order: 3,
+			// 组件位置："top" 表示固定在顶部
+			position: "sticky",
+			// CSS 类名
+			class: "onload-animation",
+			// 动画延迟时间
+			animationDelay: 50,
+		},
+		{
+			// 组件类型：一言组件
+			type: "Yan",
+			// 是否启用该组件
+			enable: true,
+			// 组件显示顺序
+			order: 4,
+			// 组件位置："sticky" 表示粘性定位，可滚动
+			position: "sticky",
+			// CSS 类名
+			class: "onload-animation",
+			// 动画延迟时间
+			animationDelay: 150,
+			// 响应式配置
+			responsive: {
+				// 折叠阈值：当分类数量超过5个时自动折叠
+				collapseThreshold: 5,
+			},
+		},
+		{
+			// 组件类型：公告组件
+			type: "RecentComment",
+			// 是否启用该组件（现在通过统一配置控制）
+			enable: true,
+			// 组件显示顺序
+			order: 5,
+			// 组件位置："top" 表示固定在顶部
+			position: "sticky",
+			// CSS 类名
+			class: "onload-animation",
+			// 动画延迟时间
+			animationDelay: 50,
+		},
+		{
 			// 组件类型：分类组件
 			type: "categories",
 			// 是否启用该组件
 			enable: true,
 			// 组件显示顺序
-			order: 3,
+			order: 6,
 			// 组件位置："sticky" 表示粘性定位，可滚动
 			position: "sticky",
 			// CSS 类名
@@ -414,7 +462,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 是否启用该组件
 			enable: true,
 			// 组件显示顺序
-			order: 5,
+			order: 7,
 			// 组件位置："sticky" 表示粘性定位
 			position: "sticky",
 			// CSS 类名

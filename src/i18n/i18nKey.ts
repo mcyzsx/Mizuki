@@ -15,6 +15,12 @@ enum I18nKey {
 	announcement = "announcement",
 	announcementClose = "announcementClose",
 
+    RecentComment = "RecentComment",
+
+    hitokoto = "hitokoto",
+
+    Hello = "Hello",
+
 	comments = "comments",
 
 	untitled = "untitled",
