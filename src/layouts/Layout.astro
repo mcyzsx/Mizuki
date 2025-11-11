@@ -235,16 +235,18 @@ const umamiScripts = umamiConfig.scripts || ""; // 获取Umami scripts配置
 		<script src="/js/skills-progress-handler.js" defer></script>
 
 <script defer src="https://han.zsx815.top/tracker.min.js" data-website-id="mizuki"></script>
-    <script
+    <!-- <script
       defer
       src="https://umami.050815.xyz/script.js"
       data-website-id="2a600168-9edc-438f-9ca4-c3e543890d5f"
-    ></script>
+    ></script> -->
 </head>
 	<body class=" min-h-screen " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner, "zen-maru-gothic-enabled": siteConfig.font.zenMaruGothic.enable, "hanalei-enabled": siteConfig.font.hanalei.enable}]}
 		  data-overlayscrollbars-initialize
 	>
 		<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRX3XGVH" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+        <script defer src="https://han.zsx815.top/tracker.min.js" data-website-id="mizuki"></script>
 		
 		<!-- 页面顶部渐变高光效果 - 只在full和semifull模式下显示 -->
 		{shouldShowTopHighlight && <div class="top-gradient-highlight"></div>}
