@@ -18,18 +18,7 @@ const runningDays = Math.floor(
   (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
 );
 
-// ===== 构建时拉取 Umami =====
-const umamiUrl = "https://umami-mizuki.zsx815.top/";
-let today_uv = 0;
-let today_pv = 0;
-try {
-  const res = await fetch(umamiUrl);
-  const data = await res.json();
-  today_uv = data.today_uv ?? 0;
-  today_pv = data.today_pv ?? 0;
-} catch (e) {
-  console.warn("构建时 Umami 数据获取失败:", e);
-}
+/* ===== Busuanzi：无需构建时拉取 ===== */
 function formatNumber(n: number) {
   return n >= 10000 ? (n / 10000).toFixed(1) + "万" : n.toString();
 }
@@ -137,9 +126,6 @@ function formatNumber(n: number) {
             <a class="contact-link" href="https://t.me/zhzsx_me" title="Telegram">
               <Icon name="ph:telegram-logo-bold" />
             </a>
-            <!-- <a class="contact-link" href="https://discord.com" title="Discord">
-              <Icon name="ph:discord-logo-bold" />
-            </a> -->
             <a class="contact-link" href="https://x.com/kemiao" title="X">
               <Icon name="ph:x-logo-bold" />
             </a>
@@ -147,7 +133,7 @@ function formatNumber(n: number) {
           <Icon name="ph:address-book-bold" class="card-bg-icon" />
         </div>
 
-        <!-- 网站统计卡片 -->
+        <!-- 网站统计卡片（Busuanzi 版） -->
         <div class="card stats-card">
           <span class="label">网站统计</span>
           <div class="stats-content">
@@ -161,12 +147,12 @@ function formatNumber(n: number) {
                 <span class="stat-label">运行天数</span>
               </div>
               <div class="stat-item">
-                <span class="stat-value">{formatNumber(today_uv)}</span>
-                <span class="stat-label">今日访客</span>
+                <span class="stat-value" id="busuanzi_value_site_uv"></span>
+                <span class="stat-label">总访客</span>
               </div>
               <div class="stat-item">
-                <span class="stat-value">{formatNumber(today_pv)}</span>
-                <span class="stat-label">今日浏览</span>
+                <span class="stat-value" id="busuanzi_value_site_pv"></span>
+                <span class="stat-label">总浏览</span>
               </div>
             </div>
           </div>
@@ -177,8 +163,11 @@ function formatNumber(n: number) {
   </div>
 </MainGridLayout>
 
+<!-- 不蒜子统计脚本 -->
+<script async src="https://busuanzi.icodeq.com/busuanzi.pure.mini.js"></script>
+
 <style>
-  /* 全局样式 */
+  /* 与原文件完全一致，直接复用 */
   .about-page {
     padding: 2rem 1rem;
     min-height: calc(100vh - var(--header-height));
