@@ -147,11 +147,11 @@ function formatNumber(n: number) {
                 <span class="stat-label">运行天数</span>
               </div>
               <div class="stat-item">
-                <span class="stat-value" id="busuanzi_value_site_uv"></span>
+                <span class="stat-value" id="busuanzi_today_pv"></span>
                 <span class="stat-label">总访客</span>
               </div>
               <div class="stat-item">
-                <span class="stat-value" id="busuanzi_value_site_pv"></span>
+                <span class="stat-value" id="busuanzi_today_uv"></span>
                 <span class="stat-label">总浏览</span>
               </div>
             </div>
@@ -164,7 +164,7 @@ function formatNumber(n: number) {
 </MainGridLayout>
 
 <!-- 不蒜子统计脚本 -->
-<script async src="https://cdn.bootcdn.net/ajax/libs/busuanzi/2.3.0/bsz.pure.mini.js"></script>
+<script src="//cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js" defer></script>
 
 <style>
   /* 与原文件完全一致，直接复用 */
