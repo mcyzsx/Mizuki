@@ -13,7 +13,7 @@ onMount(async () => {
   /* 1. 同步内联 CSS（保证首次进入就有样式） */
   if (!(document as any).__neteaseMiniPlayerCSS) {
     const css = await fetch(
-      'https://cdn.jsdelivr.net/gh/mcyzsx/NeteaseMiniPlayer@main/netease-mini-player-v2.css'
+      '/assets/css/netease-mini-player-v2.css'
     ).then((r) => r.text());
     const style = document.createElement('style');
     style.textContent = css;
@@ -24,7 +24,7 @@ onMount(async () => {
   /* 2. 加载 JS（仅一次） */
   if (!(window as any).NeteaseMiniPlayer) {
     const sc = document.createElement('script');
-    sc.src = 'https://cdn.jsdelivr.net/gh/mcyzsx/NeteaseMiniPlayer@main/netease-mini-player-v2.js';
+    sc.src = '/assets/js/netease-mini-player-v2.js';
     sc.onload = init;
     document.body.appendChild(sc);
   } else {

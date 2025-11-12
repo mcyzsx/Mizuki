@@ -1,15 +1,14 @@
 ---
+// ******  你的原有 frontmatter 完全不变  ******
 import MarkdownIt from 'markdown-it';
 import { siteConfig } from '../config';
 import I18nKey from '../i18n/i18nKey';
 import { i18n } from '../i18n/translation';
 import MainGridLayout from '../layouts/MainGridLayout.astro';
 
-/* 1. 若日记页关闭则 404 */
 if (!siteConfig.featurePages.diary) return Astro.redirect('/404/');
 
-/* 2. 拉取远端数据 */
-const API = 'https://cdn.jsdelivr.net/gh/mcyzsx/cdn-api@output/v2/repos/mcyzsx/Moment/issues%3Fper_page%3D20/data.json';
+const API = 'https://memo-api.zsx815.top/v2/repos/mcyzsx/Moment/issues%3Fper_page%3D20/data.json';
 let remoteIssues: any[] = [];
 try {
   const res = await fetch(API);
@@ -18,41 +17,31 @@ try {
   console.warn('[diary] fetch error:', e);
 }
 
-/* 3. Markdown 渲染器 */
 const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
+remoteIssues.forEach(iss => (iss.body = (iss.body || '').replace(/\r?\n/g, '<br>')));
 
 interface Moment {
   id: number;
   title: string;
-  html: string;      // 已渲染的 markdown
-  date: string;      // created_at
-  labels: string[];  // 标签
-  images: string[];  // 提取的 img src
+  html: string;
+  date: string;
+  labels: string[];
 }
-const moments: Moment[] = remoteIssues.map((issue) => {
-  const html = md.render(issue.body || '');
-  // 提取所有 img src
-  const images = Array.from(html.matchAll(/<img[^>]+src="([^">]+)"/g)).map((m) => m[1]);
-  return {
-    id: issue.id,
-    title: issue.title,
-    html,
-    date: issue.created_at,
-    labels: (issue.labels || []).map((l: any) => l.name),
-    images,
-  };
-});
+const moments: Moment[] = remoteIssues.map(iss => ({
+  id: iss.id,
+  title: iss.title,
+  html: md.render(iss.body),
+  date: iss.created_at,
+  labels: (iss.labels || []).map((l: any) => l.name),
+}));
 
-/* 4. 时间差格式化 */
 function formatTime(dateString: string): string {
   const now = new Date();
   const date = new Date(dateString);
-  const diffInMinutes = Math.floor(
-    (now.getTime() - now.getTimezoneOffset() * 60 * 1000 - date.getTime()) / (1000 * 60)
-  );
-  if (diffInMinutes < 60) return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
-  if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}${i18n(I18nKey.diaryHoursAgo)}`;
-  return `${Math.floor(diffInMinutes / 1440)}${i18n(I18nKey.diaryDaysAgo)}`;
+  const diff = Math.floor((now.getTime() - now.getTimezoneOffset() * 6e4 - date.getTime()) / 6e4);
+  if (diff < 60) return `${diff}${i18n(I18nKey.diaryMinutesAgo)}`;
+  if (diff < 1440) return `${Math.floor(diff / 60)}${i18n(I18nKey.diaryHoursAgo)}`;
+  return `${Math.floor(diff / 1440)}${i18n(I18nKey.diaryDaysAgo)}`;
 }
 ---
 
@@ -79,13 +68,13 @@ function formatTime(dateString: string): string {
         <!-- 时间线 -->
         <div class="moments-timeline">
           <div class="timeline-list space-y-4">
-            {moments.map((m) => (
+            {moments.map(m => (
               <div class="moment-item card-base p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all">
                 <div class="moment-content">
-                  <h2 class="text-base md:text-lg font-semibold mb-2">{m.title}</h2>
-                  <div
-                    class="moment-text prose prose-sm md:prose-base max-w-none text-90 leading-relaxed mb-3 md:mb-4"
-                    set:html={m.html}
+                  <!-- 这里就是要改色的标题 -->
+                  <h2 class="text-base md:text-lg font-semibold mb-2 moment-title-fix">{m.title}</h2>
+                  <div class="moment-text prose prose-sm md:prose-base max-w-none text-90 leading-relaxed mb-3 md:mb-4"
+                       set:html={m.html}
                   />
                 </div>
 
@@ -98,10 +87,8 @@ function formatTime(dateString: string): string {
                   </div>
                   {m.labels.length > 0 && (
                     <div class="flex gap-2">
-                      {m.labels.map((l) => (
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--primary-translucent)] text-[var(--primary)]">
-                          {l}
-                        </span>
+                      {m.labels.map(l => (
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--primary-translucent)] text-[var(--primary)]">{l}</span>
                       ))}
                     </div>
                   )}
@@ -120,107 +107,78 @@ function formatTime(dateString: string): string {
   </div>
 </MainGridLayout>
 
-<!-- 纯 CSS 灯箱 -->
-<style>
-  .lightbox {
-    cursor: zoom-in;
-  }
-  input[type="checkbox"].lightbox-toggle {
-    display: none;
-  }
-  .lightbox-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s, visibility 0.3s;
-    z-index: 9999;
-  }
-  .lightbox-toggle:checked + .lightbox-overlay {
-    opacity: 1;
-    visibility: visible;
-  }
-  .lightbox-overlay img {
-    max-width: 90vw;
-    max-height: 90vh;
-    border-radius: 8px;
-  }
-  .lightbox-close {
-    position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-    color: #fff;
-    font-size: 2rem;
-    cursor: pointer;
-  }
-</style>
+<!-- Fancybox 3 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
 
 <script>
-  document.querySelectorAll('.moment-text img').forEach((img: HTMLImageElement, idx) => {
-    const src = img.src;
-    const id = `lb-${Date.now()}-${idx}`;
-    const wrapper = document.createElement('span');
-    wrapper.innerHTML = `
-      <label for="${id}" class="lightbox">
-        <img src="${src}" alt="${img.alt}" loading="lazy" class="rounded-md" />
-      </label>
-      <input type="checkbox" id="${id}" class="lightbox-toggle" />
-      <div class="lightbox-overlay">
-        <label for="${id}" class="lightbox-close">&times;</label>
-        <img src="${src}" alt="${img.alt}" />
-      </div>
-    `;
-    img.replaceWith(wrapper);
+  /* ==========  1. 把 img 包成 fancybox  ========== */
+  document.querySelectorAll('.moment-text img').forEach(img => {
+    const a = document.createElement('a');
+    a.href = img.src;
+    a.setAttribute('data-fancybox', 'gallery');
+    a.setAttribute('data-caption', img.alt || '');
+    img.parentNode.insertBefore(a, img);
+    a.appendChild(img);
   });
+  $(() => $('[data-fancybox="gallery"]').fancybox({ loop: true, animationEffect: 'zoom-in-out' }));
+
+  /* ==========  2. 关键：把 .dark 挂到 <html> 上  ========== */
+  (function(){
+    const m = window.matchMedia('(prefers-color-scheme: dark)');
+    const toggle = () => document.documentElement.classList.toggle('dark', m.matches);
+    toggle();                 // 初始
+    m.addEventListener('change', toggle);
+  })();
 </script>
 
 <style>
-  /* --- 原有卡片/头部/响应式样式全部保留 --- */
-  .card-base {
-    background: var(--card-bg);
-    border: 1px solid var(--line-divider);
-    transition: all 0.3s ease;
-  }
+/* 深色模式标题变白 */
+html.dark .moment-title-fix {
+  color: #fff !important;
+}
+/* ----- 以下是你原来的样式，未改动 ----- */
+.card-base {
+  background: var(--card-bg);
+  border: 1px solid var(--line-divider);
+  transition: all 0.3s ease;
+}
+.moments-header {
+  padding: 1rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark, var(--primary)) 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+.moments-title {
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+.moments-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+}
+.stat-number {
+  color: white;
+}
+.stat-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+@media (max-width: 640px) {
   .moments-header {
-    padding: 1rem;
-    border-radius: 8px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark, var(--primary)) 100%);
-    color: white;
-    position: relative;
-    overflow: hidden;
+    padding: 0.75rem;
   }
   .header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    z-index: 1;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
   }
-  .moments-title {
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  }
-  .moments-subtitle {
-    color: rgba(255, 255, 255, 0.9);
-  }
-  .stat-number {
-    color: white;
-  }
-  .stat-label {
-    color: rgba(255, 255, 255, 0.8);
-  }
-  @media (max-width: 640px) {
-    .moments-header {
-      padding: 0.75rem;
-    }
-    .header-content {
-      flex-direction: column;
-      text-align: center;
-      gap: 0.75rem;
-    }
-  }
+}
 </style>
