@@ -45,3 +45,7 @@ interface SearchResult {
 	raw_url?: string;
 	sub_results?: SearchResult[];
 }
+
+interface Window {
+	__GH_TOKEN__: string;
+}

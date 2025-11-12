@@ -55,7 +55,7 @@ export const LinkPresets: { [key in LinkPreset]: NavBarLink } = {
 	},
 	[LinkPreset.echo]: {
 		name: i18n(I18nKey.echo),
-		url: "/echo/",
+		url: "/ech0/",
 		icon: "material-symbols:speaker-notes",
 	},
 	[LinkPreset.news]: {

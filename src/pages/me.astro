@@ -7,7 +7,7 @@ import Comment from "../components/comment/index.astro";
 
 const author = {
   name: "钟神秀",
-  avatar: "https://img-zsx.oss-cn-shanghai.aliyuncs.com/cb04a9a64f09bd4ba85d9908439653ed.jpg",
+  avatar: "https://img-zsx.oss-cn-shanghai.aliyuncs.com/cb04a9a64f09bd4ba85d9908439653ed.jpg ",
   email: "mcyzsx815@qq.com",
 };
 
@@ -98,7 +98,7 @@ function formatNumber(n: number) {
             <span class="value">提倡者</span>
             <span class="value-small">INFJ-T</span>
           </div>
-          <a class="card-link" href="https://www.16personalities.com">在 16 Personalities 了解更多</a>
+          <a class="card-link" href="https://www.16personalities.com ">在 16 Personalities 了解更多</a>
           <Icon name="ph:brain-bold" class="card-bg-icon" />
         </div>
 
@@ -119,16 +119,16 @@ function formatNumber(n: number) {
             <a class="contact-link" href={`mailto:${author.email}`} title="邮箱">
               <Icon name="ph:envelope-simple-bold" />
             </a>
-            <a class="contact-link" href="https://qm.qq.com/q/QKiovnkOkO" title="微信">
+            <a class="contact-link" href="https://qm.qq.com/q/QKiovnkOkO " title="微信">
               <Icon name="ri:qq-line" />
             </a>
-            <a class="contact-link" href="https://space.bilibili.com/396923563" title="哔哩哔哩">
+            <a class="contact-link" href="https://space.bilibili.com/396923563 " title="哔哩哔哩">
               <Icon name="ri:bilibili-fill" />
             </a>
-            <a class="contact-link" href="https://t.me/zhzsx_me" title="Telegram">
+            <a class="contact-link" href="https://t.me/zhzsx_me " title="Telegram">
               <Icon name="ph:telegram-logo-bold" />
             </a>
-            <a class="contact-link" href="https://x.com/kemiao" title="X">
+            <a class="contact-link" href="https://x.com/kemiao " title="X">
               <Icon name="ph:x-logo-bold" />
             </a>
           </div>
@@ -159,6 +159,19 @@ function formatNumber(n: number) {
             </div>
           </div>
           <Icon name="ph:chart-line-bold" class="card-bg-icon" />
+        </div>
+
+        <!-- 网易云音乐卡片 -->
+        <div class="card music-player-card">
+          <span class="label">正在听</span>
+          <div
+            class="netease-mini-player"
+            data-playlist-id="13681647281"
+            data-lyric="true"
+            data-theme="auto"
+            data-size="compact">
+          </div>
+          <Icon name="ph:music-notes-simple-bold" class="card-bg-icon" />
         </div>
       </div>
     </div>
@@ -194,6 +207,12 @@ function formatNumber(n: number) {
 
 <!-- 不蒜子统计脚本 -->
 <script src="//cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js" defer></script>
+
+<!-- 网易云音乐播放器脚本 -->
+<script src="https://netease.zsx815.top/netease-mini-player-v2.js" defer></script>
+
+<!-- 引入 CSS 文件 -->
+<link rel="stylesheet" href="https://netease.zsx815.top/netease-mini-player-v2.css">
 
 <style>
   /* 与原文件完全一致，直接复用 */
@@ -477,6 +496,31 @@ function formatNumber(n: number) {
     font-size: 0.9rem;
     color: var(--c-text-2);
   }
+  /* 新增：网易云音乐卡片样式 */
+  .music-player-card {
+    grid-column: 1 / -1;
+    color: var(--c-text-1);
+    padding: 2rem 1.5rem;
+  }
+  .netease-mini-player {
+    width: 100%;
+    margin-top: 1rem;
+  }
+    /* 1. 取消音乐卡片的层叠上下文 */
+    .music-player-card {
+  overflow: visible !important;   /* 关键：不截下拉 */
+  position: relative;  
+    transform: none;           /* 取消 transform 引起的上下文 */
+    will-change: auto;         /* 取消 will-change */
+    contain: none;             /* 取消 contain */
+    }
+
+/* 2. 歌单面板自然流，撑高卡片 */
+.n-playlist-panel {
+  position: relative !important;  /* 不用 absolute，占空间 */
+  z-index: auto !important;       /* 不建层叠上下文 */
+  margin-top: 0.5rem;             /* 与播放器间距 */
+}
   @keyframes float-in {
     from {
       opacity: 0;
