@@ -21,6 +21,10 @@ enum I18nKey {
 
     Hello = "Hello",
 
+    news = "60s",
+
+    weather = "weather",
+
 	comments = "comments",
 
 	untitled = "untitled",
@@ -82,6 +86,10 @@ enum I18nKey {
 
 	// 音乐播放器
 	playlist = "playlist",
+
+    gallery = "Gallery",
+
+    echo = "echo",
 
 	// 相册页面
 	albums = "albums",

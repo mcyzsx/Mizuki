@@ -1,1 +1,64 @@
-这里是HTML注入示例，你可以在这个文件中添加自定义的HTML内容
+<!-- 开往-友链接力（居中） -->
+<center style="margin-top:20px;">
+  <a href="https://www.travellings.cn/go.html"
+     target="_blank"
+     rel="noopener"
+     title="开往-友链接力">
+    <img src="https://www.travellings.cn/assets/logo.gif"
+         alt="开往-友链接力"
+         width="120">
+  </a>
+</center>
+
+<!-- ================= 博客运行时长（北京时间） ================= -->
+<center>
+  <br><br>
+  <span id="runtime_span"></span>
+  <br>
+  <!-- ================= 旅行者一号实时距离 ================= -->
+  <span id="voyager_span"></span>
+</center>
+
+<script>
+/* ========== 1. 博客运行时长 ========== */
+const BLOG_START = new Date('2025/10/20 12:00:00');   // 改为你的建站时间（北京时间）
+function pad(n) { return n < 10 ? '0' + n : n; }
+
+function show_runtime() {
+  const now = new Date();
+  const offset = 8 * 3600 * 1000;                 // UTC → 北京时间
+  const beijingNow = new Date(now.getTime() + offset);
+  const diff = beijingNow - BLOG_START;
+
+  const days    = Math.floor(diff / (24 * 3600 * 1000));
+  const hours   = Math.floor((diff % (24 * 3600 * 1000)) / (3600 * 1000));
+  const minutes = Math.floor((diff % (3600 * 1000)) / (60 * 1000));
+  const seconds = Math.floor((diff % (60 * 1000)) / 1000);
+
+  document.getElementById('runtime_span').textContent =
+    `⏲️ 本站已运行 ${days} 天 | ${pad(hours)} 小时 | ${pad(minutes)} 分 | ${pad(seconds)} 秒 ⏲️`;
+
+  setTimeout(show_runtime, 1000);
+}
+
+/* ========== 2. 旅行者一号实时距离 ========== */
+/* 参考 TheSkyLive 2025-11-07 数据：约 25,341,990,915 km，速度 ≈ 16.999 km/s [^11^] */
+const VOYAGER_START_KM = 25_341_990_915;   // 2025-11-07 00:00:00 的公里数
+const VOYAGER_SPEED_KM = 16.999;           // km/s，相对地球远离速度
+const VOYAGER_START_TIME = new Date('2025-11-07T00:00:00Z').getTime();
+
+function show_voyager() {
+  const now = Date.now();
+  const deltaSeconds = (now - VOYAGER_START_TIME) / 1000;
+  const currentKm = VOYAGER_START_KM + deltaSeconds * VOYAGER_SPEED_KM;
+
+  document.getElementById('voyager_span').textContent =
+    `🛰️ 旅行者一号已飞离地球 ${Math.floor(currentKm).toLocaleString('zh-CN')} 公里 🛰️`;
+
+  setTimeout(show_voyager, 1000);
+}
+
+/* 启动 */
+show_runtime();
+show_voyager();
+</script>

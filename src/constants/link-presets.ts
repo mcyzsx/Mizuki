@@ -53,4 +53,19 @@ export const LinkPresets: { [key in LinkPreset]: NavBarLink } = {
 		url: "/timeline/",
 		icon: "material-symbols:timeline",
 	},
+	[LinkPreset.echo]: {
+		name: i18n(I18nKey.echo),
+		url: "/echo/",
+		icon: "material-symbols:speaker-notes",
+	},
+	[LinkPreset.news]: {
+		name: i18n(I18nKey.news),
+		url: "/60s/",
+		icon: "material-symbols:news",
+	},
+	[LinkPreset.weather]: {
+		name: i18n(I18nKey.weather),
+		url: "/weather/",
+		icon: "flat-ui:weather",
+	},
 };

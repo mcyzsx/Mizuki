@@ -2,6 +2,8 @@
 import { Icon } from "astro-icon/components";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { getSortedPosts } from "../utils/content-utils";
+import Comment from "../components/comment/index.astro";
+// import Twikoo from "@components/comment/Twikoo.astro";
 
 const author = {
   name: "钟神秀",
@@ -12,7 +14,7 @@ const author = {
 const allBlogPosts = await getSortedPosts();
 const totalPosts = allBlogPosts.length;
 
-const startDate = new Date("2025-11-01");
+const startDate = new Date("2025-10-20");
 const today = new Date();
 const runningDays = Math.floor(
   (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
@@ -161,7 +163,34 @@ function formatNumber(n: number) {
       </div>
     </div>
   </div>
+<!-- 留言板卡片 -->
+<div class="card comment-card">
+  <div class="comment-wrapper">
+    <span class="label">留言</span>
+    <Comment
+      post={{
+        id: 'about-page',
+        slug: 'me',
+        collection: 'posts',
+        body: '',
+        data: {
+          title: '关于我',
+          date: new Date(),
+          updated: new Date()
+        },
+        render: async () => ({
+          html: '',
+          Content: '',
+          headings: [],
+          remarkPluginFrontmatter: {}
+        })
+      }}
+    />
+  </div>
+  <Icon name="ph:chat-circle-dots-bold" class="card-bg-icon" />
+</div>
 </MainGridLayout>
+
 
 <!-- 不蒜子统计脚本 -->
 <script src="//cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js" defer></script>
@@ -494,6 +523,29 @@ function formatNumber(n: number) {
     .stats-card {
       padding: 3rem 1rem 1.5rem;
     }
+    /* 和统计卡片同宽：左右顶头 */
+.comment-card {
+  grid-column: 1 / -1;
+  position: relative;
+  padding: 0;                /* 卡片本身不保留内间距 */
+  background: transparent;   /* 背景交给内部 wrapper */
+  border: none;
+  box-shadow: none;
+}
+
+.comment-wrapper {
+  margin: 0 -1rem;           /* 关键：左右负间距顶满 */
+  padding: 2rem 1rem;        /* 再把内容内间距补回来 */
+  background-color: var(--ld-bg-card);
+  border: 1px solid var(--c-border);
+  border-radius: 1.5rem;
+}
+
+/* 夜间模式继承 */
+html.dark .comment-wrapper {
+  background-color: var(--c-bg-2);
+  border-color: var(--c-border);
+}
     .stats-grid {
       grid-template-columns: repeat(2, 1fr);
     }
