@@ -3,6 +3,7 @@ import { Icon } from "astro-icon/components";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { getSortedPosts } from "../utils/content-utils";
 import Comment from "../components/comment/index.astro";
+import NeteasePlayer from '@/components/NeteaseMe.astro';
 // import Twikoo from "@components/comment/Twikoo.astro";
 
 const author = {
@@ -163,15 +164,10 @@ function formatNumber(n: number) {
 
         <!-- 网易云音乐卡片 -->
         <div class="card music-player-card">
-          <span class="label">正在听</span>
-          <div
-            class="netease-mini-player"
-            data-playlist-id="13681647281"
-            data-lyric="true"
-            data-theme="auto"
-            data-size="compact">
-          </div>
-          <Icon name="ph:music-notes-simple-bold" class="card-bg-icon" />
+  <span class="label">正在听</span>
+  <NeteasePlayer id="13681647281" type="playlist" />
+  <Icon name="ph:music-notes-simple-bold" class="card-bg-icon" />
+</div>
         </div>
       </div>
     </div>
@@ -207,12 +203,6 @@ function formatNumber(n: number) {
 
 <!-- 不蒜子统计脚本 -->
 <script src="//cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js" defer></script>
-
-<!-- 网易云音乐播放器脚本 -->
-<script src="https://netease.zsx815.top/netease-mini-player-v2.js" defer></script>
-
-<!-- 引入 CSS 文件 -->
-<link rel="stylesheet" href="https://netease.zsx815.top/netease-mini-player-v2.css">
 
 <style>
   /* 与原文件完全一致，直接复用 */

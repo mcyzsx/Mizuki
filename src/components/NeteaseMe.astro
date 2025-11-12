@@ -1,0 +1,28 @@
+---
+import Netease from "./NeteaseMe.svelte";
+
+export interface Props {
+  id: string;
+  type?: 'song' | 'playlist' | 'album';
+  lyric?: boolean;
+  theme?: string;
+  size?: 'compact' | 'mini';
+}
+const {
+  id,
+  type = 'playlist',
+  lyric = true,
+  theme = 'auto',
+  size = 'compact',
+} = Astro.props;
+---
+
+<!-- 客户端渲染 -->
+<Netease
+  id={id}
+  type={type}
+  lyric={lyric}
+  theme={theme}
+  size={size}
+  client:load
+/>

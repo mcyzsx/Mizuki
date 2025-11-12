@@ -9,7 +9,7 @@ interface Props {
   style?: string;
 }
 const className = Astro.props.class;
-const style   = Astro.props.style;
+const style     = Astro.props.style;
 
 const COLLAPSED_HEIGHT = "4.5rem";
 const hitokotoComponent = widgetManager.getConfig().components.find(c => c.type === "Yan");
@@ -27,7 +27,7 @@ const isCollapsed = hitokotoComponent
   style={style}
 >
   <p id="hitokoto-text" class="text">加载中…</p>
-  <!-- 刷新图标 -->
+
   <button id="hitokoto-refresh" class="refresh" aria-label="刷新一言">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
@@ -37,29 +37,38 @@ const isCollapsed = hitokotoComponent
 
 <style>
   /* 让 WidgetLayout 的 header 成为定位容器 */
-  .hitokoto-widget :global(.widget-layout){
+  .hitokoto-widget :global(.widget-layout) {
     position: relative;
   }
+
   /* 刷新按钮：贴在标题行右侧 */
-  .refresh{
+  .refresh {
     position: absolute;
     right: 0.75rem;
-    top: 1.1rem;          /* 手动对齐标题行垂直中心 */
+    top: 1.1rem;
     background: none;
     border: none;
     cursor: pointer;
     color: var(--btn-secondary-text);
     padding: 4px;
     border-radius: 4px;
-    transition: background .2s;
+    transition: background 0.2s;
   }
-  .refresh:hover{
+  .refresh:hover {
     background: var(--btn-secondary-bg);
   }
-  .text{
+
+  /* 一言正文 */
+  .text {
     margin: 0;
     line-height: 1.6;
     word-break: break-word;
+    color: var(--text-normal); /* 明亮模式默认色 */
+  }
+
+  /* 深色模式适配：文字变白 */
+  :global(.dark) .text {
+    color: #fff;
   }
 </style>
 
@@ -69,16 +78,16 @@ const isCollapsed = hitokotoComponent
   const textEl = document.getElementById("hitokoto-text")!;
   const btnEl  = document.getElementById("hitokoto-refresh")!;
 
-  async function load(){
+  async function load() {
     textEl.textContent = "加载中…";
-    try{
+    try {
       const data = await fetchHitokoto();
       textEl.textContent = data.hitokoto;
-    }catch{
+    } catch {
       textEl.textContent = "加载失败，请重试";
     }
   }
 
   btnEl.addEventListener("click", load);
-  load();      // 首次自动加载
+  load(); // 首次自动加载
 </script>

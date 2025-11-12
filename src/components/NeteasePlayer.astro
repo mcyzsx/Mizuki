@@ -1,0 +1,23 @@
+---
+import NeteasePlayerClient from "./NeteasePlayerClient.svelte";
+
+export interface Props {
+  url: string;
+  autoplay?: boolean;
+  theme?: string;
+}
+const { url, autoplay = false, theme = 'var(--primary)' } = Astro.props;
+
+const reg = /163\.com.*?[\/#]+song\?.*id=(\d+)/i;
+const match = url.match(reg);
+if (!match) throw new Error(`[NeteasePlayer] 不支持的网易单曲链接：${url}`);
+const songId = match[1];
+---
+
+<!-- 客户端渲染 -->
+<NeteasePlayerClient
+  songId={songId}
+  autoplay={autoplay}
+  theme={theme}
+  client:load
+/>

@@ -4,6 +4,7 @@ import BiliVideo from "@/components/BiliVideo.astro";
 import GitHubRepoCard from "@/components/GitHubRepoCard.astro";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
+import NeteasePlayer from '@/components/NeteasePlayer.astro';
 
 /* =================== 类型定义 =================== */
 interface EchoImage {
@@ -12,7 +13,6 @@ interface EchoImage {
   image_source: string;
   message_id: number;
 }
-
 interface EchoItem {
   id: number;
   content: string;
@@ -26,7 +26,6 @@ interface EchoItem {
   extension_type?: string;
   tags?: { name: string }[];
 }
-
 interface EchoResp {
   code: number;
   msg: string;
@@ -126,16 +125,8 @@ const moments = items.map((it) => ({
 
                   {/* 音乐 —— NeteaseMiniPlayer */}
                   {m.extension_type === "MUSIC" && m.extension && (
-                    <div class="mb-3 md:mb-4">
-                      <div
-                        class="netease-mini-player"
-                        data-song-id={getNeteaseSongId(m.extension)}
-                        data-lyric="true"
-                        data-theme="auto"
-                        data-size="compact"
-                      />
-                    </div>
-                  )}
+  <NeteasePlayer url={m.extension} />
+)}
 
                   {/* B 站视频 */}
                   {m.extension_type === "VIDEO" && m.extension && (
@@ -185,18 +176,31 @@ const moments = items.map((it) => ({
   </div>
 </MainGridLayout>
 
-<!-- ==========  引入 NeteaseMiniPlayer  ========== -->
+<!-- ==========  播放器样式 ========== -->
 <link
   rel="stylesheet"
-  href="/assets/css/netease-mini-player-v2.css"
+  href="https://cdn.jsdelivr.net/gh/mcyzsx/NeteaseMiniPlayer@main/netease-mini-player-v2.css"
 />
-<script
-  is:inline
-  src="https://netease.zsx815.top/netease-mini-player-v2.js"
-></script>
+
+<!-- ==========  片段级脚本：加载+初始化 ========== -->
+<script>
+  /* 加载播放器 JS（仅一次） */
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/gh/mcyzsx/NeteaseMiniPlayer@main/netease-mini-player-v2.js';
+  script.onload = () => {
+    // 初始化当前已注入的播放器
+    if (typeof NeteaseMiniPlayer !== 'undefined') NeteaseMiniPlayer.init();
+  };
+  document.body.appendChild(script);
+
+  /* swup 页面切换完成后再次初始化 */
+  document.addEventListener('swup:page:view', () => {
+    if (typeof NeteaseMiniPlayer !== 'undefined') NeteaseMiniPlayer.init();
+  });
+</script>
 
 <style>
-  /* 与原文件完全一致，直接复用 */
+  /* =====  原样式  ===== */
   .card-base {
     background: var(--card-bg);
     border: 1px solid var(--line-divider);
@@ -234,5 +238,52 @@ const moments = items.map((it) => ({
     .moment-images {
       grid-template-columns: repeat(2, 1fr);
     }
+  }
+
+  /* =====  Mizuki 主题适配 NeteaseMiniPlayer  ===== */
+  .netease-mini-player {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .nmp-container {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--line-divider) !important;
+    border-radius: var(--radius-large) !important;
+    overflow: hidden;
+    color: var(--text-main) !important;
+  }
+  .nmp-title,
+  .nmp-artist {
+    color: var(--text-main) !important;
+  }
+  .nmp-progress-played {
+    background: var(--primary) !important;
+  }
+  .nmp-progress-thumb {
+    border-color: var(--primary) !important;
+  }
+  .nmp-btn {
+    color: var(--text-main) !important;
+    opacity: .85;
+    transition: opacity .2s;
+  }
+  .nmp-btn:hover {
+    opacity: 1;
+  }
+  .nmp-btn-play {
+    color: var(--primary) !important;
+  }
+  .nmp-lyric-box {
+    background: var(--card-bg) !important;
+    border-top: 1px solid var(--line-divider) !important;
+  }
+  .nmp-lyric-line {
+    color: var(--text-sub) !important;
+  }
+  .nmp-lyric-line.active {
+    color: var(--primary) !important;
+  }
+  [data-theme="dark"] .nmp-container {
+    box-shadow: 0 4px 12px rgba(0,0,0,.25);
   }
 </style>

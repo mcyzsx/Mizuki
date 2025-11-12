@@ -49,3 +49,7 @@ interface SearchResult {
 interface Window {
 	__GH_TOKEN__: string;
 }
+
+declare var NeteaseMiniPlayer: {
+	init(): void;
+};
