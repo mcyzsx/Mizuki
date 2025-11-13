@@ -143,6 +143,7 @@ export enum LinkPreset {
     echo = 10,
     news = 11,
     weather = 12,
+    steam = 13,
 }
 
 export type NavBarLink = {

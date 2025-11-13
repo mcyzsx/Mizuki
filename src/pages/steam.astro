@@ -1,0 +1,168 @@
+---
+import MainGridLayout from '../layouts/MainGridLayout.astro';
+// import { siteConfig } from '../config';
+import I18nKey from '../i18n/i18nKey';
+import { i18n } from '../i18n/translation';
+
+// /* ==========  功能开关  ========== */
+// if (!siteConfig.featurePages.steam) return Astro.redirect('/404/');
+
+/* ==========  请求用户数据  ========== */
+const userRes = await fetch('https://steam-api.zsx815.top/api/steam-user')
+  .then(r => r.json())
+  .catch(() => null);
+const gamesRes = await fetch('https://steam-api.zsx815.top/api/steam-games')
+  .then(r => r.json())
+  .catch(() => null);
+
+const user   = userRes?.data?.user   ?? null;
+const games  = gamesRes?.data?.games ?? null;
+---
+
+<MainGridLayout title={i18n(I18nKey.steam)} description="我的 Steam 游戏库">
+  <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+    <div class="card-base z-10 px-4 py-4 md:px-6 md:py-5 relative w-full">
+      <div class="relative max-w-5xl mx-auto">
+
+        <!-- 头部用户卡片 -->
+        {user && (
+          <div class="steam-user-card mb-8">
+            <div class="flex items-center gap-4">
+              <img
+                src={user.avatar.large}
+                alt="avatar"
+                class="w-20 h-20 md:w-24 md:h-24 rounded-full shadow"
+              />
+              <div class="flex-1">
+                <h1 class="text-xl md:text-2xl font-bold">{user.username}</h1>
+                <div class="flex items-center gap-2 mt-1">
+                  <span
+                    class={`inline-block w-3 h-3 rounded-full ${
+                      user.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
+                    }`}
+                  />
+                  <span class="text-sm text-75">{user.statusMessage}</span>
+                </div>
+                <p class="text-sm text-75 mt-2">
+                  总时长 <span class="font-semibold text-[var(--primary)]">
+                    {Math.floor((user.playtimeStats.totalForever ?? 0) / 60)} h
+                  </span>
+                  · 两周 <span class="font-semibold text-[var(--primary)]">
+                    {Math.floor((user.playtimeStats.totalTwoWeeks ?? 0) / 60)} h
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <!-- 最近游玩 -->
+        {games?.recentGames && games.recentGames.length > 0 && (
+          <section class="mb-10">
+            <h2 class="section-title">最近游玩</h2>
+            <div class="scroll-x-mask">
+              <div class="recent-games flex gap-4 pb-2">
+                {games.recentGames.map(g => (
+                  <a
+                    href={`https://store.steampowered.com/app/${g.appid}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    class="recent-card flex-shrink-0"
+                  >
+                    <img
+                      src={g.images.headerImage}
+                      alt={g.name}
+                      class="w-48 h-20 object-cover rounded"
+                    />
+                    <div class="mt-2 text-sm font-medium truncate">{g.name}</div>
+                    <div class="text-xs text-75">
+                      {Math.floor((g.playtimeForever ?? 0) / 60)} h · 成就 {g.achievements?.unlocked ?? 0}/{g.achievements?.total ?? 0}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <!-- 全部游戏 -->
+        {games?.allGames && games.allGames.length > 0 && (
+          <section>
+            <h2 class="section-title">全部游戏</h2>
+            <div class="game-list space-y-3">
+              {games.allGames.map(g => (
+                <div class="game-item card-base p-3 flex items-center gap-4">
+                  <img
+                    src={g.images.icon}
+                    alt={g.name}
+                    class="w-12 h-12 rounded"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium">{g.name}</div>
+                    <div class="text-xs text-75 mt-1">
+                      {Math.floor((g.playtimeForever ?? 0) / 60)} h
+                      {g.achievements && (
+                        <>
+                          · 成就 {g.achievements.unlocked}/{g.achievements.total}
+                          <div class="mt-1 w-full bg-[var(--line-divider)] rounded h-1.5">
+                            <div
+                              class="bg-[var(--primary)] h-1.5 rounded"
+                              style={`width:${g.achievements.percentage}%`}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <!-- 底部提示 -->
+        <div class="text-center text-75 text-xs italic mt-10">
+          数据每 10 分钟缓存一次 · 接口由 <a class="underline" href="https://github.com/mcyzsx/Steam_Profile_API_Server" target="_blank" rel="noreferrer">Steam_Profile_API_Server</a> 驱动
+        </div>
+      </div>
+    </div>
+  </div>
+</MainGridLayout>
+
+<!-- 深色模式 -->
+<script>
+  (function(){
+    const m = window.matchMedia('(prefers-color-scheme: dark)');
+    const toggle = () => document.documentElement.classList.toggle('dark', m.matches);
+    toggle();
+    m.addEventListener('change', toggle);
+  })();
+</script>
+
+<style>
+/* ===== 通用变量已存在，仅补 steam 专用 ===== */
+.steam-user-card{
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark, var(--primary)) 100%);
+  @apply rounded-xl p-4 text-white shadow;
+}
+.section-title{
+  @apply text-lg font-bold mb-4;
+}
+
+/* ******  关键：深色模式所有文字变白  ****** */
+html.dark,
+html.dark * {
+  color: #fff !important;
+}
+
+.scroll-x-mask{
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.recent-card{
+  @apply block w-48 hover:scale-[1.03] transition-transform;
+}
+.game-item{
+  @apply hover:shadow-md transition-shadow;
+}
+</style>

@@ -1,0 +1,38 @@
+---
+export interface Props {
+  game: any;
+}
+const { game } = Astro.props;
+---
+
+<a
+  href={`https://store.steampowered.com/app/${game.appid}`}
+  target="_blank"
+  rel="noopener"
+  class="block rounded-xl overflow-hidden border border-base-300 hover:shadow-xl transition"
+>
+  <img
+    src={game.images.headerImage}
+    alt={game.name}
+    class="w-full h-32 object-cover"
+  />
+  <div class="p-3">
+    <h3 class="font-semibold truncate">{game.name}</h3>
+    <div class="text-xs text-gray-500 mt-1">
+      总时长 {game.playtimeForever} h
+      {game.playtimeTwoWeeks > 0 && (
+        <span class="ml-2 badge badge-primary">两周 {game.playtimeTwoWeeks} h</span>
+      )}
+    </div>
+    {game.achievements && (
+      <div class="text-xs mt-2">
+        成就 {game.achievements.unlocked}/{game.achievements.total}
+        <progress
+          class="progress progress-primary w-full"
+          value={game.achievements.unlocked}
+          max={game.achievements.total}
+        />
+      </div>
+    )}
+  </div>
+</a>

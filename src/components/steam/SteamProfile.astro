@@ -1,0 +1,50 @@
+---
+import GameCard from './GameCard.astro';
+
+export interface Props {
+  user: any;
+  games: any;
+}
+const { user, games } = Astro.props;
+---
+
+<section class="grid gap-8 md:grid-cols-3">
+  <!-- 左侧头像 + 状态 -->
+  <aside class="md:col-span-1 card p-6">
+    <img
+      src={user.avatar.large}
+      alt={user.username}
+      class="w-32 h-32 rounded-full mx-auto"
+    />
+    <h1 class="text-center text-2xl font-bold mt-4">{user.username}</h1>
+    <p class="text-center text-sm text-gray-500">{user.statusMessage}</p>
+
+    <div class="mt-4 text-sm space-y-1">
+      <div>总游戏时长：<span class="font-semibold">{user.playtimeStats.totalForever} h</span></div>
+      <div>两周时长：<span class="font-semibold">{user.playtimeStats.totalTwoWeeks} h</span></div>
+    </div>
+  </aside>
+
+  <!-- 右侧游戏列表 -->
+  <div class="md:col-span-2 space-y-6">
+    {games.recentGames.length > 0 && (
+      <section>
+        <h2 class="text-xl font-bold mb-3">最近玩过</h2>
+        <div class="grid gap-4 sm:grid-cols-2">
+          {games.recentGames.map((g: any) => (
+            <GameCard game={g} />
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section>
+      <h2 class="text-xl font-bold mb-3">全部游戏 ({games.totalCount})</h2>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {games.allGames.map((g: any) => (
+          <GameCard game={g} />
+        ))}
+      </div>
+    </section>
+  </div>
+</section>

@@ -74,6 +74,8 @@ export const zh_CN: Translation = {
 	[Key.animeEmptyBangumi]: "请检查 Bangumi 配置或网络连接",
 	[Key.animeEmptyLocal]: "请在 src/data/anime.ts 文件中添加番剧信息",
 
+    [Key.steam]: "Steam",
+
 	// 短文页面
 	[Key.diarySubtitle]: "随时随地，分享生活",
 	[Key.diaryCount]: "条短文",

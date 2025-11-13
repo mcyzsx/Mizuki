@@ -233,6 +233,7 @@ export const navBarConfig: NavBarConfig = {
 				LinkPreset.Anime,
 				LinkPreset.echo,
 				LinkPreset.Diary,
+                LinkPreset.steam,
 				{
 					name: "相册",
 					url: "/albums/",

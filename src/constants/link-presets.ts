@@ -68,4 +68,9 @@ export const LinkPresets: { [key in LinkPreset]: NavBarLink } = {
 		url: "/weather/",
 		icon: "flat-ui:weather",
 	},
+	[LinkPreset.steam]: {
+		name: i18n(I18nKey.steam),
+		url: "/steam/",
+		icon: "mdi:steam",
+	},
 };

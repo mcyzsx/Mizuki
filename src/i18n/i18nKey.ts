@@ -84,6 +84,8 @@ enum I18nKey {
 	notFoundDescription = "notFoundDescription",
 	backToHome = "backToHome",
 
+    steam = "steam",
+
 	// 音乐播放器
 	playlist = "playlist",
 
