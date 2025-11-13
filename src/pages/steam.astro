@@ -43,13 +43,15 @@ const games  = gamesRes?.data?.games ?? null;
                   />
                   <span class="text-sm text-75">{user.statusMessage}</span>
                 </div>
-                <p class="text-sm text-75 mt-2">
-                  总时长 <span class="font-semibold text-[var(--primary)]">
+                <p class="text-sm text-white mt-2">
+                总时长
+                <span class="font-semibold text-[var(--primary)] text-white">
                     {Math.floor((user.playtimeStats.totalForever ?? 0) / 60)} h
-                  </span>
-                  · 两周 <span class="font-semibold text-[var(--primary)]">
+                </span>
+                · 两周
+                <span class="font-semibold text-[var(--primary)] text-white">
                     {Math.floor((user.playtimeStats.totalTwoWeeks ?? 0) / 60)} h
-                  </span>
+                </span>
                 </p>
               </div>
             </div>
@@ -140,6 +142,13 @@ const games  = gamesRes?.data?.games ?? null;
 </script>
 
 <style>
+.time-desc {
+  font-size: 0.875rem;          /* text-sm 等价 */
+  color: #374151;               /* 深灰，对应 gray-700 */
+}
+html.dark .time-desc {
+  color: #fff !important;
+}
 /* ===== 通用变量已存在，仅补 steam 专用 ===== */
 .steam-user-card{
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark, var(--primary)) 100%);
