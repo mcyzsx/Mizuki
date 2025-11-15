@@ -18,6 +18,8 @@ try {
 }
 
 const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
+// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
+// biome-ignore lint/suspicious/useIterableCallbackReturn: <explanation>
 remoteIssues.forEach(iss => (iss.body = (iss.body || '').replace(/\r?\n/g, '<br>')));
 
 interface Moment {
@@ -36,12 +38,27 @@ const moments: Moment[] = remoteIssues.map(iss => ({
 }));
 
 function formatTime(dateString: string): string {
-  const now = new Date();
-  const date = new Date(dateString);
-  const diff = Math.floor((now.getTime() - now.getTimezoneOffset() * 6e4 - date.getTime()) / 6e4);
-  if (diff < 60) return `${diff}${i18n(I18nKey.diaryMinutesAgo)}`;
-  if (diff < 1440) return `${Math.floor(diff / 60)}${i18n(I18nKey.diaryHoursAgo)}`;
-  return `${Math.floor(diff / 1440)}${i18n(I18nKey.diaryDaysAgo)}`;
+    var TG=8;
+    if(siteConfig.timeZone>=-12&&siteConfig.timeZone<=12)TG=siteConfig.timeZone;
+    const timeGap=TG;
+	
+	const lang=siteConfig.lang;
+	const now = new Date();
+	const date = new Date(dateString);
+	const diffInMinutes = Math.floor(
+		(now.getTime()+timeGap*60*60*1000 - date.getTime()) / (1000 * 60),
+	);
+
+	if (diffInMinutes < 60) {
+		return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
+	}
+	if (diffInMinutes < 1440) {
+		// 24小时
+		const hours = Math.floor(diffInMinutes / 60);
+		return `${hours}${i18n(I18nKey.diaryHoursAgo)}`;
+	}
+	const days = Math.floor(diffInMinutes / 1440);
+	return `${days}${i18n(I18nKey.diaryDaysAgo)}`;
 }
 ---
 
@@ -113,12 +130,14 @@ function formatTime(dateString: string): string {
 
 <script>
   /* ==========  1. 把 img 包成 fancybox  ========== */
-  document.querySelectorAll('.moment-text img').forEach(img => {
+  document.querySelectorAll('.moment-text img').forEach((img: HTMLImageElement) => {
     const a = document.createElement('a');
     a.href = img.src;
     a.setAttribute('data-fancybox', 'gallery');
     a.setAttribute('data-caption', img.alt || '');
+    if (img.parentNode) {
     img.parentNode.insertBefore(a, img);
+}
     a.appendChild(img);
   });
   $(() => $('[data-fancybox="gallery"]').fancybox({ loop: true, animationEffect: 'zoom-in-out' }));

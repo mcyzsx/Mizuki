@@ -19,15 +19,18 @@ import { LinkPreset } from "./types/config";
 
 // 定义站点语言
 const SITE_LANG = "zh_CN"; // 语言代码，例如：'en', 'zh_CN', 'ja' 等。
-
+const SITE_TIMEZONE = 8; //设置你的网站时区 from -12 to 12 default in UTC+8
 export const siteConfig: SiteConfig = {
 	title: "ZSXの小站",
 	subtitle: "我的博客，在这里记录我的资源分享、踩坑教程和生活日常。",
+	siteURL: "https://blog.zsx915.top/", // 请替换为你的站点URL，以斜杠结尾
+
+	timeZone: SITE_TIMEZONE,
 
 	lang: SITE_LANG,
 
 	themeColor: {
-		hue: 35, // 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
+		hue: 230, // 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
 		fixed: false, // 对访问者隐藏主题色选择器
 	},
 
@@ -72,9 +75,19 @@ export const siteConfig: SiteConfig = {
 		useNewStyle: true,
 	},
 
-	banner: {
-		enable: true, // 是否启动Banner壁纸模式
+	// 壁纸模式配置
+	wallpaperMode: {
+		// 默认壁纸模式：banner=顶部横幅，fullscreen=全屏壁纸，none=无壁纸
+		defaultMode: "banner",
+		// 整体布局方案切换按钮显示设置（默认："desktop"）
+		// "off" = 不显示
+		// "mobile" = 仅在移动端显示
+		// "desktop" = 仅在桌面端显示
+		// "both" = 在所有设备上显示
+		showModeSwitchOnMobile: "desktop",
+	},
 
+	banner: {
 		// 支持单张图片或图片数组，当数组长度 > 1 时自动启用轮播
 		src: {
 			desktop: [
@@ -151,13 +164,6 @@ export const siteConfig: SiteConfig = {
 		navbar: {
 			transparentMode: "semifull", // 导航栏透明模式："semi" 半透明加圆角，"full" 完全透明，"semifull" 动态透明
 		},
-
-		// 整体布局方案切换按钮显示设置（默认："desktop"）
-		// "off" = 不显示
-		// "mobile" = 仅在移动端显示
-		// "desktop" = 仅在桌面端显示
-		// "both" = 在所有设备上显示
-		showModeSwitchOnMobile: "desktop",
 	},
 	toc: {
 		enable: true, // 启用目录功能
@@ -185,33 +191,24 @@ export const siteConfig: SiteConfig = {
 	showLastModified: true, // 控制“上次编辑”卡片显示的开关
 };
 export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
-	enable: false, // 启用全屏壁纸功能,非Banner模式下生效
 	src: {
 		desktop: [
-			"/assets/desktop-banner/d1.webp",
-			"/assets/desktop-banner/d2.webp",
-			"/assets/desktop-banner/d3.webp",
-			"/assets/desktop-banner/d4.webp",
-			"/assets/desktop-banner/d5.webp",
-			"/assets/desktop-banner/d6.webp",
-			"/assets/desktop-banner/d7.webp",
-			"/assets/desktop-banner/d8.webp",
+			"/assets/desktop-banner/1.webp",
+			"/assets/desktop-banner/2.webp",
+			"/assets/desktop-banner/3.webp",
+			"/assets/desktop-banner/4.webp",
 		], // 桌面横幅图片
 		mobile: [
-			"/assets/mobile-banner/m1.webp",
-			"/assets/mobile-banner/m2.webp",
-			"/assets/mobile-banner/m3.webp",
-			"/assets/mobile-banner/m4.webp",
-			"/assets/mobile-banner/m5.webp",
-			"/assets/mobile-banner/m6.webp",
-			"/assets/mobile-banner/m7.webp",
-			"/assets/mobile-banner/m8.webp",
+			"/assets/mobile-banner/1.webp",
+			"/assets/mobile-banner/2.webp",
+			"/assets/mobile-banner/3.webp",
+			"/assets/mobile-banner/4.webp",
 		], // 移动横幅图片
 	}, // 使用本地横幅图片
 	position: "center", // 壁纸位置，等同于 object-position
 	carousel: {
 		enable: true, // 启用轮播
-		interval: 1, // 轮播间隔时间（秒）
+		interval: 5, // 轮播间隔时间（秒）
 	},
 	zIndex: -1, // 层级，确保壁纸在背景层
 	opacity: 0.8, // 壁纸透明度

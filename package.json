@@ -1,8 +1,12 @@
 {
 	"name": "mizuki",
 	"type": "module",
-	"version": "6.1.0",
+	"version": "6.5.0",
 	"scripts": {
+		"sync-content": "node scripts/sync-content.js",
+		"init-content": "node scripts/init-content-repo.js",
+		"predev": "node scripts/sync-content.js || true",
+		"prebuild": "node scripts/sync-content.js || true",
 		"dev": "astro dev",
 		"start": "astro dev",
 		"check": "astro check",
@@ -90,6 +94,7 @@
 		"@iconify-json/mdi": "^1.2.3",
 		"@rollup/plugin-yaml": "^4.1.2",
 		"@types/hast": "^3.0.4",
+		"@types/jquery": "^3.5.33",
 		"@types/markdown-it": "^14.1.2",
 		"@types/mdast": "^4.0.4",
 		"@types/sanitize-html": "^2.16.0",

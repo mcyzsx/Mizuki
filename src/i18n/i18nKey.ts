@@ -52,6 +52,7 @@ enum I18nKey {
 	friends = "friends",
 	anime = "anime",
 	diary = "diary",
+	gallery = "gallery",
 
 	// 番剧页面
 	animeTitle = "animeTitle",
@@ -89,7 +90,7 @@ enum I18nKey {
 	// 音乐播放器
 	playlist = "playlist",
 
-    gallery = "Gallery",
+    Gallery = "Gallery",
 
     echo = "echo",
 
