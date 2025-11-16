@@ -69,7 +69,7 @@ export default defineConfig({
 			},
 		}),
 		expressiveCode({
-			themes: [expressiveCodeConfig.theme, expressiveCodeConfig.theme],
+			themes: ["github-light", "github-dark"],
 			plugins: [
 				pluginCollapsibleSections(),
 				pluginLineNumbers(),
@@ -81,6 +81,18 @@ export default defineConfig({
 				overridesByLang: {
 					shellsession: {
 						showLineNumbers: false,
+					},
+					bash: {
+						frame: 'code',
+					},
+					shell: {
+						frame: 'code',
+					},
+					sh: {
+						frame: 'code',
+					},
+					zsh: {
+						frame: 'code',
 					},
 				},
 			},
@@ -95,12 +107,12 @@ export default defineConfig({
 				frames: {
 					editorBackground: "var(--codeblock-bg)",
 					terminalBackground: "var(--codeblock-bg)",
-					terminalTitlebarBackground: "var(--codeblock-topbar-bg)",
-					editorTabBarBackground: "var(--codeblock-topbar-bg)",
+					terminalTitlebarBackground: "var(--codeblock-bg)",
+					editorTabBarBackground: "var(--codeblock-bg)",
 					editorActiveTabBackground: "none",
 					editorActiveTabIndicatorBottomColor: "var(--primary)",
 					editorActiveTabIndicatorTopColor: "none",
-					editorTabBarBorderBottomColor: "var(--codeblock-topbar-bg)",
+					editorTabBarBorderBottomColor: "var(--codeblock-bg)",
 					terminalTitlebarBorderBottomColor: "none",
 				},
 				textMarkers: {

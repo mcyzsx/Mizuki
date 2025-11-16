@@ -26,8 +26,8 @@ import "katex/dist/katex.css";
 import "../styles/mobile-navbar.css";
 import "../styles/wallpaper-navbar-transparent.css";
 import "../styles/fancybox-custom.css";
-import "../styles/mobile-transition-fix.css";
-import "../styles/mobile-post-list-fix.css";
+import "../styles/expressive-code.css";
+import "../styles/panel-animations.css";
 
 interface Props {
 	title?: string;
@@ -209,16 +209,12 @@ const umamiScripts = umamiConfig.scripts || ""; // 获取Umami scripts配置
 			
 			// Set the theme for Expressive Code based on current mode
 			const expressiveTheme = isDark ? "github-dark" : "github-light";
-			document.documentElement.setAttribute("data-theme", expressiveTheme);
+			const currentTheme = document.documentElement.getAttribute("data-theme");
 			
-			// 确保主题正确应用 - 解决代码块渲染问题
-			// 使用 requestAnimationFrame 确保在下一帧检查主题状态
-			requestAnimationFrame(() => {
-				const currentTheme = document.documentElement.getAttribute('data-theme');
-				if (currentTheme !== expressiveTheme) {
-					document.documentElement.setAttribute('data-theme', expressiveTheme);
-				}
-			});
+			// 只在主题不同时才更新，避免触发不必要的重绘
+			if (currentTheme !== expressiveTheme) {
+				document.documentElement.setAttribute("data-theme", expressiveTheme);
+			}
 
 			// Load the hue from local storage
 			const hue = localStorage.getItem('hue') || configHue;
@@ -732,23 +728,39 @@ function disableAnimation() {
 
 const bannerEnabled = !!document.getElementById('banner-wrapper')
 
-function setClickOutsideToClose(panel: string, ignores: string[]) {
-	document.addEventListener("click", event => {
-		let panelDom = document.getElementById(panel);
-		let tDom = event.target;
-		if (!(tDom instanceof Node)) return;		// Ensure the event target is an HTML Node
-		for (let ig of ignores) {
-			let ie = document.getElementById(ig)
-			if (ie == tDom || (ie?.contains(tDom))) {
-				return;
-			}
+// 导入面板管理器
+async function initializePanelManager() {
+	try {
+		const { panelManager } = await import('../utils/panel-manager.js');
+		
+		function setClickOutsideToClose(panel: string, ignores: string[]) {
+			document.addEventListener("click", async event => {
+				let panelDom = document.getElementById(panel);
+				let tDom = event.target;
+				if (!(tDom instanceof Node)) return;		// Ensure the event target is an HTML Node
+				for (let ig of ignores) {
+					let ie = document.getElementById(ig)
+					if (ie == tDom || (ie?.contains(tDom))) {
+						return;
+					}
+				}
+				await panelManager.closePanel(panel as any);
+			});
 		}
-		panelDom!.classList.add("float-panel-closed");
-	});
+		setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"])
+		setClickOutsideToClose("nav-menu-panel", ["nav-menu-panel", "nav-menu-switch"])
+		setClickOutsideToClose("search-panel", ["search-panel", "search-bar", "search-switch"])
+		setClickOutsideToClose("mobile-toc-panel", ["mobile-toc-panel", "mobile-toc-switch"])
+		setClickOutsideToClose("wallpaper-mode-panel", ["wallpaper-mode-panel", "wallpaper-mode-switch"])
+		
+		return panelManager;
+	} catch (error) {
+		console.error('Failed to initialize panel manager:', error);
+		return null;
+	}
 }
-setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"])
-setClickOutsideToClose("nav-menu-panel", ["nav-menu-panel", "nav-menu-switch"])
-setClickOutsideToClose("search-panel", ["search-panel", "search-bar", "search-switch"])
+
+initializePanelManager();
 
 
 function loadTheme() {
@@ -1150,13 +1162,12 @@ const setup = () => {
 		const expectedTheme = isDark ? 'github-dark' : 'github-light';
 		const currentTheme = document.documentElement.getAttribute('data-theme');
 		
-		// 如果主题不匹配，强制重新应用
+		// 如果主题不匹配，使用批量更新减少重绘
 		if (currentTheme !== expectedTheme) {
-			document.documentElement.setAttribute('data-theme', expectedTheme);
-			// 触发代码块重新渲染
-			setTimeout(() => {
-				window.dispatchEvent(new CustomEvent('theme-change'));
-			}, 50);
+			// 使用 requestAnimationFrame 批量更新，减少重绘
+			requestAnimationFrame(() => {
+				document.documentElement.setAttribute('data-theme', expectedTheme);
+			});
 		}
 		
 		// 检查当前页面是否为文章页面，如果是则触发自定义事件用于初始化评论系统
@@ -1261,11 +1272,27 @@ window.onresize = () => {
 
 // 页面加载完成后初始化banner和轮播图
 if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', () => {
+	document.addEventListener('DOMContentLoaded', async () => {
 		showBanner();
+		// 初始化面板管理器
+		try {
+			const { panelManager } = await import('../utils/panel-manager.js');
+			console.log('Panel manager initialized');
+		} catch (error) {
+			console.error('Failed to initialize panel manager:', error);
+		}
 	});
 } else {
 	showBanner();
+	// 页面已经加载完成，立即初始化面板管理器
+	(async () => {
+		try {
+			const { panelManager } = await import('../utils/panel-manager.js');
+			console.log('Panel manager initialized');
+		} catch (error) {
+			console.error('Failed to initialize panel manager:', error);
+		}
+	})();
 }
 
 </script>
@@ -1273,7 +1300,11 @@ if (document.readyState === 'loading') {
 <!-- 代码块折叠功能 -->
 <script>
 import '../scripts/code-collapse.js';
-import '../styles/expressive-code.css';
+</script>
+
+<!-- 主题切换综合性能优化器（包含代码块优化、重型元素优化、性能诊断） -->
+<script>
+import '../scripts/theme-optimizer.js';
 </script>
 
 <script>
