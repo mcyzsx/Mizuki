@@ -1,0 +1,204 @@
+---
+// ******  你的原有 frontmatter 完全不变  ******
+import MarkdownIt from 'markdown-it';
+import { siteConfig } from '../config';
+import I18nKey from '../i18n/i18nKey';
+import { i18n } from '../i18n/translation';
+import MainGridLayout from '../layouts/MainGridLayout.astro';
+
+if (!siteConfig.featurePages.diary) return Astro.redirect('/404/');
+
+const API = 'https://memo-api.zsx815.top/v2/repos/mcyzsx/Moment/issues%3Fper_page%3D20/data.json';
+let remoteIssues: any[] = [];
+try {
+  const res = await fetch(API);
+  if (res.ok) remoteIssues = await res.json();
+} catch (e) {
+  console.warn('[diary] fetch error:', e);
+}
+
+const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
+// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
+// biome-ignore lint/suspicious/useIterableCallbackReturn: <explanation>
+remoteIssues.forEach(iss => (iss.body = (iss.body || '').replace(/\r?\n/g, '<br>')));
+
+interface Moment {
+  id: number;
+  title: string;
+  html: string;
+  date: string;
+  labels: string[];
+}
+const moments: Moment[] = remoteIssues.map(iss => ({
+  id: iss.id,
+  title: iss.title,
+  html: md.render(iss.body),
+  date: iss.created_at,
+  labels: (iss.labels || []).map((l: any) => l.name),
+}));
+
+function formatTime(dateString: string): string {
+	var TG = 8;
+	if (siteConfig.timeZone >= -12 && siteConfig.timeZone <= 12)
+		TG = siteConfig.timeZone;
+	const timeGap = TG;
+
+	const lang = siteConfig.lang;
+	const now = new Date();
+	const date = new Date(dateString);
+	const diffInMinutes = Math.floor(
+		(now.getTime() + timeGap * 60 * 60 * 1000 - date.getTime()) / (1000 * 60),
+	);
+
+	if (diffInMinutes < 60) {
+		return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
+	}
+	if (diffInMinutes < 1440) {
+		// 24小时
+		const hours = Math.floor(diffInMinutes / 60);
+		return `${hours}${i18n(I18nKey.diaryHoursAgo)}`;
+	}
+	const days = Math.floor(diffInMinutes / 1440);
+	return `${days}${i18n(I18nKey.diaryDaysAgo)}`;
+}
+---
+
+<MainGridLayout title={i18n(I18nKey.diary)} description="即刻短文">
+  <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+    <div class="card-base z-10 px-4 py-4 md:px-6 md:py-5 relative w-full">
+      <div class="relative max-w-4xl">
+        <!-- 头部 -->
+        <div class="moments-header mb-6">
+          <div class="header-content">
+            <div class="header-info">
+              <h1 class="moments-title text-xl md:text-2xl lg:text-3xl font-bold text-90 mb-1">{i18n(I18nKey.diary)}</h1>
+              <p class="moments-subtitle text-sm md:text-base lg:text-lg text-75">{i18n(I18nKey.diarySubtitle)}</p>
+            </div>
+            <div class="header-stats">
+              <div class="stat-item text-center">
+                <span class="stat-number text-lg md:text-xl lg:text-2xl font-bold text-[var(--primary)]">{moments.length}</span>
+                <span class="stat-label text-xs md:text-sm lg:text-base text-75">{i18n(I18nKey.diaryCount)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 时间线 -->
+        <div class="moments-timeline">
+          <div class="timeline-list space-y-4">
+            {moments.map(m => (
+              <div class="moment-item card-base p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all">
+                <div class="moment-content">
+                  <!-- 这里就是要改色的标题 -->
+                  <h2 class="text-base md:text-lg font-semibold mb-2 moment-title-fix">{m.title}</h2>
+                  <div class="moment-text prose prose-sm md:prose-base max-w-none text-90 leading-relaxed mb-3 md:mb-4"
+                       set:html={m.html}
+                  />
+                </div>
+
+                <hr class="moment-divider border-t border-[var(--line-divider)] my-3 md:my-4" />
+
+                <div class="moment-footer flex justify-between items-center">
+                  <div class="moment-time flex items-center gap-1.5 text-75 text-xs md:text-sm lg:text-base">
+                    <i class="time-icon text-xs md:text-sm">🕐</i>
+                    <time datetime={m.date}>{formatTime(m.date)}</time>
+                  </div>
+                  {m.labels.length > 0 && (
+                    <div class="flex gap-2">
+                      {m.labels.map(l => (
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--primary-translucent)] text-[var(--primary)]">{l}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- 底部提示 -->
+        <div class="moments-tips text-center mt-6 md:mt-8 lg:mt-10 text-75 text-xs md:text-sm lg:text-base italic">
+          {i18n(I18nKey.diaryTips)}
+        </div>
+      </div>
+    </div>
+  </div>
+</MainGridLayout>
+
+<!-- Fancybox 3 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+<script>
+  /* ==========  1. 把 img 包成 fancybox  ========== */
+  document.querySelectorAll('.moment-text img').forEach((img: HTMLImageElement) => {
+    const a = document.createElement('a');
+    a.href = img.src;
+    a.setAttribute('data-fancybox', 'gallery');
+    a.setAttribute('data-caption', img.alt || '');
+    if (img.parentNode) {
+    img.parentNode.insertBefore(a, img);
+}
+    a.appendChild(img);
+  });
+  $(() => $('[data-fancybox="gallery"]').fancybox({ loop: true, animationEffect: 'zoom-in-out' }));
+
+  /* ==========  2. 关键：把 .dark 挂到 <html> 上  ========== */
+  (function(){
+    const m = window.matchMedia('(prefers-color-scheme: dark)');
+    const toggle = () => document.documentElement.classList.toggle('dark', m.matches);
+    toggle();                 // 初始
+    m.addEventListener('change', toggle);
+  })();
+</script>
+
+<style>
+/* 深色模式标题变白 */
+html.dark .moment-title-fix {
+  color: #fff !important;
+}
+/* ----- 以下是你原来的样式，未改动 ----- */
+.card-base {
+  background: var(--card-bg);
+  border: 1px solid var(--line-divider);
+  transition: all 0.3s ease;
+}
+.moments-header {
+  padding: 1rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark, var(--primary)) 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+.moments-title {
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+.moments-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+}
+.stat-number {
+  color: white;
+}
+.stat-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+@media (max-width: 640px) {
+  .moments-header {
+    padding: 0.75rem;
+  }
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+}
+</style>

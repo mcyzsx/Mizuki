@@ -181,11 +181,22 @@ export const siteConfig: SiteConfig = {
 
 	// 字体配置
 	font: {
-		zenMaruGothic: {
-			enable: false, // 启用全局圆体适合日语和英语，对中文适配一般
+		// 注意：自定义字体需要在 src/styles/main.css 中引入字体文件
+		// 注意：字体子集优化功能目前仅支持 TTF 格式字体
+		asciiFont: {
+			// 英文字体 - 优先级最高
+			// 指定为英文字体则无论字体包含多大范围，都只会保留 ASCII 字符子集
+			fontFamily: "ZenMaruGothic-Medium",
+			fontWeight: "400",
+			localFonts: ["ZenMaruGothic-Medium.ttf"],
+			enableCompress: true, // 启用字体子集优化，减少字体文件大小
 		},
-		hanalei: {
-			enable: true, // 启用 Hanalei 字体作为全局字体，适合中文去使用
+		cjkFont: {
+			// 中日韩字体 - 作为回退字体
+			fontFamily: "'loli'",
+			fontWeight: "500",
+			localFonts: ["loli.ttf"],
+			enableCompress: true, // 启用字体子集优化，减少字体文件大小
 		},
 	},
 	showLastModified: true, // 控制“上次编辑”卡片显示的开关

@@ -84,6 +84,8 @@ class NeteaseMiniPlayer {
         
         this.initTheme();
         this.createPlayerHTML();
+        this.applyResponsiveControls?.();
+        this.setupEnvListeners?.();
         this.bindEvents();
         this.setupAudioEvents();
         try {
@@ -187,6 +189,7 @@ class NeteaseMiniPlayer {
             progressBar: this.element.querySelector('.progress-bar'),
             currentTime: this.element.querySelector('.current-time'),
             totalTime: this.element.querySelector('.total-time'),
+            volumeContainer: this.element.querySelector('.volume-container'),
             volumeSlider: this.element.querySelector('.volume-slider'),
             volumeBar: this.element.querySelector('.volume-bar'),
             volumeIcon: this.element.querySelector('.volume-icon'),
@@ -307,8 +310,13 @@ class NeteaseMiniPlayer {
         if (this.isIdle) return;
         this.isIdle = true;
         this.element.classList.remove('fading-in');
+        const side = this.getDockSide();
+        if (side) {
+            this.element.classList.add(`docked-${side}`);
+        }
         this.element.classList.add('fading-out');
-        const onEnd = () => {
+        const onEnd = (e) => {
+            if (e.animationName !== 'player-fade-out') return;
             this.element.classList.remove('fading-out');
             this.element.classList.add('idle');
             this.element.removeEventListener('animationend', onEnd);
@@ -318,11 +326,37 @@ class NeteaseMiniPlayer {
 
     restoreOpacity() {
         this.clearIdleTimer();
+        const side = this.getDockSide();
+        const hasDock = side ? this.element.classList.contains(`docked-${side}`) : false;
+        if (hasDock) {
+            const popAnim = side === 'right' ? 'player-popout-right' : 'player-popout-left';
+            this.element.classList.add(`popping-${side}`);
+            const onPopEnd = (e) => {
+                if (e.animationName !== popAnim) return;
+                this.element.removeEventListener('animationend', onPopEnd);
+                this.element.classList.remove(`popping-${side}`);
+                this.element.classList.remove(`docked-${side}`);
+                if (this.isIdle) {
+                    this.isIdle = false;
+                }
+                this.element.classList.remove('idle', 'fading-out');
+                this.element.classList.add('fading-in');
+                const onEndIn = (ev) => {
+                    if (ev.animationName !== 'player-fade-in') return;
+                    this.element.classList.remove('fading-in');
+                    this.element.removeEventListener('animationend', onEndIn);
+                };
+                this.element.addEventListener('animationend', onEndIn);
+            };
+            this.element.addEventListener('animationend', onPopEnd);
+            return;
+        }
         if (!this.isIdle) return;
         this.isIdle = false;
         this.element.classList.remove('idle', 'fading-out');
         this.element.classList.add('fading-in');
-        const onEndIn = () => {
+        const onEndIn = (ev) => {
+            if (ev.animationName !== 'player-fade-in') return;
             this.element.classList.remove('fading-in');
             this.element.removeEventListener('animationend', onEndIn);
         };
@@ -337,8 +371,77 @@ class NeteaseMiniPlayer {
         if (!this.shouldEnableIdleOpacity()) {
             this.clearIdleTimer();
             this.isIdle = false;
-            this.element.classList.remove('idle', 'fading-in', 'fading-out');
+            this.element.classList.remove('idle', 'fading-in', 'fading-out', 'docked-left', 'docked-right', 'popping-left', 'popping-right');
         }
+    }
+    getDockSide() {
+        const pos = this.config.position;
+        if (pos === 'top-left' || pos === 'bottom-left') return 'left';
+        if (pos === 'top-right' || pos === 'bottom-right') return 'right';
+        return 'right';
+    }
+    static getUAInfo() {
+        if (NeteaseMiniPlayer._uaCache) return NeteaseMiniPlayer._uaCache;
+        const nav = typeof navigator !== 'undefined' ? navigator : {};
+        const uaRaw = (nav.userAgent || '');
+        const ua = uaRaw.toLowerCase();
+        const platform = (nav.platform || '').toLowerCase();
+        const maxTP = nav.maxTouchPoints || 0;
+        const isWeChat = /micromessenger/.test(ua);
+        const isQQ = /(mqqbrowser| qq)/.test(ua);
+        const isInAppWebView = /\bwv\b|; wv/.test(ua) || /version\/\d+.*chrome/.test(ua);
+        const isiPhone = /iphone/.test(ua);
+        const isiPadUA = /ipad/.test(ua);
+        const isIOSLikePad = !isiPadUA && platform.includes('mac') && maxTP > 1;
+        const isiOS = isiPhone || isiPadUA || isIOSLikePad;
+        const isAndroid = /android/.test(ua);
+        const isHarmonyOS = /harmonyos/.test(uaRaw) || /huawei|honor/.test(ua);
+        const isMobileToken = /mobile/.test(ua) || /sm-|mi |redmi|huawei|honor|oppo|vivo|oneplus/.test(ua);
+        const isHarmonyDesktop = isHarmonyOS && !isMobileToken && !isAndroid && !isiOS;
+        const isPWA = (typeof window !== 'undefined' && (
+            (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+            (nav.standalone === true)
+        )) || false;
+        const isMobile = (isiOS || isAndroid || (isHarmonyOS && !isHarmonyDesktop) || isMobileToken || isInAppWebView);
+        const info = { isMobile, isiOS, isAndroid, isHarmonyOS, isHarmonyDesktop, isWeChat, isQQ, isInAppWebView, isPWA, isiPad: isiPadUA || isIOSLikePad };
+        NeteaseMiniPlayer._uaCache = info;
+        return info;
+    }
+    applyResponsiveControls() {
+        const env = NeteaseMiniPlayer.getUAInfo();
+        const shouldHideVolume = !!env.isMobile;
+        this.element.classList.toggle('mobile-env', shouldHideVolume);
+        if (this.elements && this.elements.volumeContainer == null) {
+            this.elements.volumeContainer = this.element.querySelector('.volume-container');
+        }
+        if (this.elements.volumeContainer) {
+            if (shouldHideVolume) {
+                this.elements.volumeContainer.classList.add('sr-visually-hidden');
+                this.elements.volumeContainer.setAttribute('aria-hidden', 'false');
+                this.elements.volumeSlider?.setAttribute('aria-label', '音量控制（移动端隐藏，仅无障碍可见）');
+            } else {
+                this.elements.volumeContainer.classList.remove('sr-visually-hidden');
+                this.elements.volumeContainer.removeAttribute('aria-hidden');
+                this.elements.volumeSlider?.removeAttribute('aria-label');
+            }
+        }
+    }
+    setupEnvListeners() {
+        const reapply = () => this.applyResponsiveControls();
+        if (window.matchMedia) {
+            try {
+                const mq1 = window.matchMedia('(orientation: portrait)');
+                const mq2 = window.matchMedia('(orientation: landscape)');
+                mq1.addEventListener?.('change', reapply);
+                mq2.addEventListener?.('change', reapply);
+            } catch (e) {
+                mq1.onchange = reapply;
+                mq2.onchange = reapply;
+            }
+        } else {
+            window.addEventListener('orientationchange', reapply);
+        }
+        window.addEventListener('resize', reapply);
     }
     setupAudioEvents() {
         this.audio.addEventListener('loadedmetadata', () => {
@@ -940,7 +1043,7 @@ class NeteaseMiniPlayer {
             }
             this.clearIdleTimer();
             this.isIdle = false;
-            this.element.classList.remove('idle', 'fading-in', 'fading-out');
+            this.element.classList.remove('idle', 'fading-in', 'fading-out', 'docked-left', 'docked-right', 'popping-left', 'popping-right');
             this.startIdleTimer();
         } else {
             this.element.classList.remove('minimized');
@@ -953,7 +1056,7 @@ class NeteaseMiniPlayer {
             if (this.isIdle) {
                 this.restoreOpacity();
             } else {
-                this.element.classList.remove('idle', 'fading-in', 'fading-out');
+                this.element.classList.remove('idle', 'fading-in', 'fading-out', 'docked-left', 'docked-right', 'popping-left', 'popping-right');
             }
             this.isIdle = false;
         }
@@ -1158,4 +1261,4 @@ if (typeof window !== 'undefined') {
     }
 }
 
-console.log(["版本号 v2.0.10.1", "NeteaseMiniPlayer V2 [NMPv2]", "BHCN STUDIO & 北海的佰川（ImBHCN[numakkiyu]）", "GitHub地址：https://github.com/numakkiyu/NeteaseMiniPlayer", "基于 Apache 2.0 开源协议发布"].join("\n"));
+console.log(["版本号 v2.0.11", "NeteaseMiniPlayer V2 [NMPv2]", "BHCN STUDIO & 北海的佰川（ImBHCN[numakkiyu]）", "GitHub地址：https://github.com/numakkiyu/NeteaseMiniPlayer", "基于 Apache 2.0 开源协议发布"].join("\n"));
