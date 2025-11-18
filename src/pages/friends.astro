@@ -1,8 +1,9 @@
 ---
-/* ==========  friends.astro  ========== */
-import { siteConfig } from "../config";
 import { getEntry, render } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
+import Icon from "../components/misc/Icon.astro";
+import { siteConfig } from "../config";
+import { getFriendsList, getShuffledFriendsList } from "../data/friends";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
@@ -27,6 +28,7 @@ const remote = await fetch("https://friends-api.kemeow.top/v2/data.json")
 const shuffle = <T,>(a:T[])=> a.sort(()=>Math.random()-0.5);
 const friends = shuffle(remote.content);
 ---
+
 <MainGridLayout title={i18n(I18nKey.friends)} description={i18n(I18nKey.friends)}>
   <div class="friends-container">
     <!-- 友链卡片 -->
